@@ -1,0 +1,23 @@
+# wrangler.toml — Cloudflare Worker 配置
+# 文档：https://developers.cloudflare.com/workers/wrangler/configuration/
+
+# ── 基本信息 ──────────────────────────────────────
+name            = "texas-poker"           # Worker 名称（发布后访问地址：texas-poker.<账号>.workers.dev）
+main            = "worker.js"             # 入口文件
+compatibility_date = "2024-01-01"         # API 兼容基准日期
+
+# ── 运行时设置 ─────────────────────────────────────
+# WebSocket 支持无需额外配置，普通 Worker 默认支持
+
+# ── 路由（可选）────────────────────────────────────
+# 如果你有自定义域名，取消注释并填写：
+# [[routes]]
+# pattern = "poker.example.com/*"
+# zone_name = "example.com"
+
+# ── 环境：生产 ────────────────────────────────────
+[env.production]
+name = "texas-poker-prod"
+
+# ── 环境：本地开发 ─────────────────────────────────
+# wrangler dev 时自动使用 localhost:8787

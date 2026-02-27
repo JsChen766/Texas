@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Texas Hold'em · 德州扑克</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a3d0a;
+      color: #f0e6c8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px rgba(0,0,0,.6);
+      margin-bottom: 12px;
+    }
+
+    /* ── Login overlay ────────────────────────── */
+    #login-screen {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.85);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; z-index: 100;
+    }
+    #login-screen h2 { font-size: 1.5rem; }
+    #login-screen input {
+      padding: 10px 16px; border-radius: 8px;
+      border: 2px solid #4a9e4a; background: #1a2e1a;
+      color: #f0e6c8; font-size: 1rem; width: 240px;
+      outline: none;
+    }
+    #login-screen input:focus { border-color: #7acc7a; }
+    #btn-enter {
+      padding: 10px 40px; border-radius: 8px;
+      background: #2e7d32; border: none; color: #fff;
+      font-size: 1rem; cursor: pointer; transition: background .2s;
+    }
+    #btn-enter:hover { background: #388e3c; }
+
+    /* ── Connection status ─────────────────────── */
+    #conn-status {
+      padding: 4px 14px; border-radius: 20px;
+      font-size: .75rem; margin-bottom: 8px;
+      background: #1b5e20;
+    }
+    #conn-status.disconnected { background: #7f0000; }
+    #conn-status.reconnecting { background: #e65100; }
+
+    /* ── Main layout ──────────────────────────── */
+    #game-wrap {
+      width: 100%; max-width: 960px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      grid-template-rows: auto;
+      gap: 12px;
+    }
+
+    /* ── Sidebar: player list ─────────────────── */
+    #player-panel {
+      background: rgba(0,0,0,.45);
+      border-radius: 12px; padding: 12px;
+      border: 1px solid #2e5e2e;
+    }
+    #player-panel h3 { margin-bottom: 8px; font-size: .9rem; opacity: .7; }
+
+    .player-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 8px; border-radius: 8px; margin-bottom: 4px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid transparent;
+      transition: border-color .2s;
+    }
+    .player-row.active-turn   { border-color: #ffd600; background: rgba(255,214,0,.08); }
+    .player-row.folded-player { opacity: .4; }
+    .player-row.self          { border-color: #42a5f5; }
+
+    .player-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #2e7d32; display: flex; align-items: center;
+      justify-content: center; font-size: .85rem; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .player-info { flex: 1; min-width: 0; }
+    .player-name { font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .player-chips { font-size: .75rem; color: #ffd600; }
+    .player-bet   { font-size: .7rem; color: #80cbc4; }
+
+    .badge {
+      font-size: .6rem; padding: 1px 5px;
+      border-radius: 4px; font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge-D   { background: #c62828; }
+    .badge-SB  { background: #1565c0; }
+    .badge-BB  { background: #6a1b9a; }
+    .badge-off { background: #37474f; color: #90a4ae; }
+    .badge-ai  { background: #e65100; }
+
+    /* ── Main game area ───────────────────────── */
+    #game-area {
+      background: rgba(0,0,0,.35);
+      border-radius: 12px; padding: 16px;
+      border: 1px solid #2e5e2e;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    /* Stage + Pot ──── */
+    #info-bar {
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    }
+    .info-chip {
+      background: rgba(0,0,0,.4); padding: 4px 14px;
+      border-radius: 20px; font-size: .85rem;
+    }
+    .info-chip span { color: #ffd600; font-weight: 700; }
+
+    /* Community cards ─ */
+    #community-area { }
+    #community-area h4 { font-size: .8rem; opacity: .6; margin-bottom: 6px; }
+    #community-cards {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+
+    /* Self hand ─────── */
+    #hand-area h4 { font-size: .8rem; opacity: .6; margin-bottom: 6px; }
+    #hand-cards   { display: flex; gap: 10px; }
+
+    /* Playing card ───── */
+    .card {
+      width: 56px; height: 80px; border-radius: 8px;
+      background: #fff; color: #111;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 700;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 6px rgba(0,0,0,.4);
+      user-select: none; position: relative;
+    }
+    .card .rank { font-size: 1.1rem; line-height: 1; }
+    .card .suit { font-size: 1.2rem; line-height: 1; }
+    .card.hearts   .suit, .card.hearts   .rank { color: #c62828; }
+    .card.diamonds .suit, .card.diamonds .rank { color: #c62828; }
+    .card.clubs    .suit, .card.clubs    .rank { color: #111; }
+    .card.spades   .suit, .card.spades   .rank { color: #111; }
+    .card.placeholder {
+      background: repeating-linear-gradient(
+        135deg, #1a4a1a 0, #1a4a1a 4px, #0f2e0f 4px, #0f2e0f 8px
+      );
+      border: 2px dashed #2e7d32;
+      color: transparent;
+    }
+
+    /* Action buttons ── */
+    #action-area { }
+    #action-area h4 { font-size: .8rem; opacity: .6; margin-bottom: 8px; }
+    #action-buttons {
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    }
+
+    button.action-btn {
+      padding: 8px 18px; border-radius: 8px;
+      border: none; cursor: pointer;
+      font-size: .9rem; font-weight: 600;
+      transition: transform .1s, opacity .2s;
+    }
+    button.action-btn:active { transform: scale(.96); }
+    button.action-btn:disabled { opacity: .35; cursor: default; }
+
+    #btn-start  { background: #2e7d32; color: #fff; }
+    #btn-fold   { background: #7f0000; color: #fff; }
+    #btn-check  { background: #1a237e; color: #fff; }
+    #btn-call   { background: #00695c; color: #fff; }
+    #btn-raise  { background: #e65100; color: #fff; }
+    #btn-allin  { background: #4a148c; color: #fff; }
+
+    #raise-input {
+      width: 80px; padding: 7px 10px;
+      border-radius: 8px; border: 2px solid #e65100;
+      background: #1a1a1a; color: #fff;
+      font-size: .9rem; outline: none;
+    }
+
+    /* Message log ────── */
+    #msg-log {
+      background: rgba(0,0,0,.4);
+      border: 1px solid #2e5e2e;
+      border-radius: 8px; padding: 8px 12px;
+      height: 110px; overflow-y: auto;
+      font-size: .78rem; display: flex;
+      flex-direction: column-reverse; gap: 2px;
+    }
+    .log-line { opacity: .85; line-height: 1.4; }
+    .log-line.system { color: #80cbc4; }
+    .log-line.error  { color: #ef9a9a; }
+
+    /* Showdown overlay ─ */
+    #showdown-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.82);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; z-index: 50; padding: 24px;
+    }
+    #showdown-overlay.visible { display: flex; }
+    #showdown-overlay h2 { font-size: 1.6rem; }
+
+    #showdown-results {
+      display: flex; gap: 16px; flex-wrap: wrap;
+      justify-content: center;
+    }
+    .sd-player {
+      background: rgba(255,255,255,.08);
+      border: 1px solid #2e5e2e; border-radius: 10px;
+      padding: 12px 16px; text-align: center; min-width: 140px;
+    }
+    .sd-player.winner {
+      border-color: #ffd600;
+      background: rgba(255,214,0,.12);
+    }
+    .sd-player .sd-name  { font-weight: 700; margin-bottom: 6px; }
+    .sd-player .sd-hand  { display: flex; justify-content: center; gap: 4px; margin-bottom: 6px; }
+    .sd-player .sd-rank  { font-size: .8rem; color: #80cbc4; }
+    .sd-player .sd-award { color: #ffd600; font-weight: 700; margin-top: 4px; }
+
+    /* Responsive ────── */
+    @media (max-width: 640px) {
+      #game-wrap { grid-template-columns: 1fr; }
+      #player-panel { order: 2; }
+      #game-area    { order: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ Login Screen ══════════════════════════════ -->
+<div id="login-screen">
+  <h2>♠ 德州扑克 Texas Hold'em</h2>
+  <p style="opacity:.6;font-size:.85rem">请输入你的昵称加入房间</p>
+  <input id="name-input" type="text" maxlength="16" placeholder="你的昵称…" autocomplete="off" />
+  <button id="btn-enter">进入房间</button>
+</div>
+
+<!-- ══ Showdown Overlay ═══════════════════════════ -->
+<div id="showdown-overlay">
+  <h2>🃏 摊牌结果</h2>
+  <div id="showdown-results"></div>
+  <p style="opacity:.5;font-size:.8rem">5 秒后自动关闭…</p>
+</div>
+
+<!-- ══ Main UI ════════════════════════════════════ -->
+<h1>♠ Texas Hold'em</h1>
+<div id="conn-status" class="disconnected">⚫ 未连接</div>
+
+<div id="game-wrap">
+
+  <!-- 左侧玩家列表 -->
+  <div id="player-panel">
+    <h3>玩家列表</h3>
+    <div id="player-list"><!-- JS 填充 --></div>
+  </div>
+
+  <!-- 右侧游戏区域 -->
+  <div id="game-area">
+
+    <!-- 状态栏 -->
+    <div id="info-bar">
+      <div class="info-chip">阶段：<span id="stage-label">等待开始</span></div>
+      <div class="info-chip">底池：<span id="pot-label">0</span></div>
+      <div class="info-chip">当前注：<span id="bet-label">0</span></div>
+    </div>
+
+    <!-- 公共牌 -->
+    <div id="community-area">
+      <h4>公共牌</h4>
+      <div id="community-cards">
+        <!-- 5 个占位 -->
+        <div class="card placeholder" data-slot="0"></div>
+        <div class="card placeholder" data-slot="1"></div>
+        <div class="card placeholder" data-slot="2"></div>
+        <div class="card placeholder" data-slot="3"></div>
+        <div class="card placeholder" data-slot="4"></div>
+      </div>
+    </div>
+
+    <!-- 自己手牌 -->
+    <div id="hand-area">
+      <h4>我的手牌</h4>
+      <div id="hand-cards">
+        <div class="card placeholder" id="hand-0"></div>
+        <div class="card placeholder" id="hand-1"></div>
+      </div>
+    </div>
+
+    <!-- 行动按钮 -->
+    <div id="action-area">
+      <h4>行动</h4>
+      <div id="action-buttons">
+        <button id="btn-start"  class="action-btn">🎮 开始游戏</button>
+        <button id="btn-fold"   class="action-btn" disabled>弃牌 Fold</button>
+        <button id="btn-check"  class="action-btn" disabled>过牌 Check</button>
+        <button id="btn-call"   class="action-btn" disabled>跟注 Call</button>
+        <input  id="raise-input" type="number" min="1" placeholder="加注额" disabled />
+        <button id="btn-raise"  class="action-btn" disabled>加注 Raise</button>
+        <button id="btn-allin"  class="action-btn" disabled>全押 All-in</button>
+      </div>
+    </div>
+
+    <!-- 消息日志 -->
+    <div id="msg-log"></div>
+
+  </div><!-- #game-area -->
+</div><!-- #game-wrap -->
+
+<script src="main.js"></script>
+</body>
+</html>
