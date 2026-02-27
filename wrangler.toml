@@ -1,22 +1,22 @@
-# wrangler.toml — Cloudflare Worker 配置
-# 文档：https://developers.cloudflare.com/workers/wrangler/configuration/
+# wrangler.toml — Cloudflare Worker + Durable Objects 配置
 
 # ── 基本信息 ──────────────────────────────────────
-name            = "texas-poker"           # Worker 名称（发布后访问地址：texas-poker.<账号>.workers.dev）
-main            = "worker.js"             # 入口文件
-compatibility_date = "2024-01-01"         # API 兼容基准日期
+name               = "texas-poker"
+main               = "worker.js"
+compatibility_date = "2024-01-01"
 
-# ── 运行时设置 ─────────────────────────────────────
-# WebSocket 支持无需额外配置，普通 Worker 默认支持
+# ── Durable Objects 绑定 ──────────────────────────
+# POKER_ROOM 是在 worker.js 中通过 env.POKER_ROOM 访问的绑定名
+[[durable_objects.bindings]]
+name       = "POKER_ROOM"
+class_name = "PokerRoom"
+
+# ── Durable Objects 迁移（首次部署必须） ────────────
+[[migrations]]
+tag         = "v1"
+new_classes = ["PokerRoom"]
 
 # ── 路由（自定义域名）─────────────────────────────
 [[routes]]
-pattern = "poker.cc8170.top/*"
+pattern   = "poker.cc8170.top/*"
 zone_name = "cc8170.top"
-
-# ── 环境：生产 ────────────────────────────────────
-[env.production]
-name = "texas-poker-prod"
-
-# ── 环境：本地开发 ─────────────────────────────────
-# wrangler dev 时自动使用 localhost:8787
