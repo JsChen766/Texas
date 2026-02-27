@@ -1,7 +1,7 @@
 # wrangler.toml — Cloudflare Worker + Durable Objects 配置
 
 # ── 基本信息 ──────────────────────────────────────
-name               = "texas-poker"
+name               = "texas"
 main               = "worker.js"
 compatibility_date = "2024-01-01"
 
