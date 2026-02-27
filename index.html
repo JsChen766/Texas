@@ -223,6 +223,20 @@
     #btn-borrow  { background: #0277bd; color: #fff; }
     #btn-dissolve { background: #6d4c41; color: #fff; }
     #btn-dissolve.voted { background: #c62828; }
+    #btn-start.voted { background: #558b2f; animation: pulse .8s infinite alternate; }
+
+    /* 开始投票条 */
+    #start-vote-bar {
+      display: none;
+      background: rgba(46,125,50,.2);
+      border: 1px solid #2e7d32;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .8rem;
+      color: #a5d6a7;
+      text-align: center;
+    }
+    #start-vote-bar.visible { display: block; }
 
     /* Message log ────── */
     #msg-log {
@@ -337,6 +351,8 @@
 
     <!-- 解散提示条 -->
     <div id="dissolve-bar">🗳 解散投票进行中：<span id="dissolve-count">0</span>/<span id="dissolve-total">0</span> 人同意</div>
+    <!-- 开始投票条 -->
+    <div id="start-vote-bar">🎮 开始投票进行中：<span id="start-count">0</span>/<span id="start-total">0</span> 人准备好</div>
 
     <!-- 行动按钮 -->
     <div id="action-area">

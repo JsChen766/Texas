@@ -72,6 +72,9 @@ const btnDissolve = document.getElementById('btn-dissolve');
 const dissolveBar   = document.getElementById('dissolve-bar');
 const dissolveCount = document.getElementById('dissolve-count');
 const dissolveTotal = document.getElementById('dissolve-total');
+const startVoteBar   = document.getElementById('start-vote-bar');
+const startVoteCount = document.getElementById('start-count');
+const startVoteTotal = document.getElementById('start-total');
 
 // ═══════════════════════════════════════════════
 // §4  WebSocket 管理
@@ -260,6 +263,7 @@ function renderPlayerList(state) {
     if (p.allIn)    badges.appendChild(makeBadge('全押', 'badge-ai'));
     if (p.folded)   badges.appendChild(makeBadge('弃牌', 'badge-off'));
     if (p.votedDissolve) badges.appendChild(makeBadge('解散✔', 'badge-dissolve'));
+    if (p.votedStart)    badges.appendChild(makeBadge('准备✔', 'badge-SB'));
 
     row.appendChild(avatar);
     row.appendChild(info);
@@ -352,8 +356,31 @@ function updateButtons(state) {
   const selfAllIn   = selfPlayer?.allIn ?? true;
   const canAct      = isMyTurn && !selfFolded && !selfAllIn;
 
-  // Start Game：仅在等待阶段可用
-  btnStart.disabled  = state.stage !== 'waiting';
+  // Start Game：待机阶段可投票，按投票状态切换文字
+  const selfStart = state.players.find(p => p.id === state.selfId);
+  if (state.stage === 'waiting') {
+    btnStart.disabled = false;
+    if (selfStart?.votedStart) {
+      btnStart.textContent = '撤回开始';
+      btnStart.classList.add('voted');
+    } else {
+      btnStart.textContent = '🎮 开始游戏';
+      btnStart.classList.remove('voted');
+    }
+  } else {
+    btnStart.disabled = true;
+    btnStart.textContent = '🎮 开始游戏';
+    btnStart.classList.remove('voted');
+  }
+
+  // 开始投票进度条
+  if (state.startVotes > 0 && state.stage === 'waiting') {
+    startVoteBar.classList.add('visible');
+    startVoteCount.textContent = state.startVotes;
+    startVoteTotal.textContent = state.startTotal;
+  } else {
+    startVoteBar.classList.remove('visible');
+  }
 
   // 借筹码：仅待机阶段可用
   btnBorrow.disabled = state.stage !== 'waiting';

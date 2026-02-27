@@ -49,6 +49,7 @@ export class PokerRoom {
     this.operationQueue   = Promise.resolve();
     this.cleanupScheduled = false;
     this.dissolveVotes    = new Set();
+    this.startVotes       = new Set();
 
     // 从持久存储加载玩家数据（筹码 + 欠款）
     this.persistedPlayers = {};
@@ -202,8 +203,9 @@ export class PokerRoom {
   _broadcastState() {
     const gs = this.gameState;
     const connectedIds   = new Set(this.players.filter(p => p.connected).map(p => p.id));
-    const dissolveTotal  = connectedIds.size;
+    const connectedTotal = connectedIds.size;
     const dissolveCount  = [...this.dissolveVotes].filter(id => connectedIds.has(id)).length;
+    const startCount     = [...this.startVotes].filter(id => connectedIds.has(id)).length;
     const pub = this.players.map((p, i) => ({
       id: p.id, name: p.name, chips: p.chips, bet: p.bet,
       folded: p.folded, allIn: p.allIn, connected: p.connected,
@@ -211,6 +213,7 @@ export class PokerRoom {
       isBB: i===gs.bigBlindIndex, handCount: p.hand?p.hand.length:0,
       debt: p.debt || 0,
       votedDissolve: this.dissolveVotes.has(p.id),
+      votedStart:    this.startVotes.has(p.id),
     }));
     for (const player of this.players) {
       const ws = this.clients.get(player.id);
@@ -223,7 +226,8 @@ export class PokerRoom {
           dealerIndex: gs.dealerIndex, smallBlindIndex: gs.smallBlindIndex,
           bigBlindIndex: gs.bigBlindIndex,
           selfHand: player.hand || [], selfId: player.id,
-          dissolveVotes: dissolveCount, dissolveTotal,
+          dissolveVotes: dissolveCount, dissolveTotal: connectedTotal,
+          startVotes: startCount, startTotal: connectedTotal,
         }));
       } catch(_) {}
     }
@@ -252,6 +256,7 @@ export class PokerRoom {
       this._broadcast({ type: 'error', message: '游戏已在进行中' }); return;
     }
     this.dissolveVotes.clear();
+    this.startVotes.clear();
     this.players = this.players.filter(p => p.chips > 0 || p.connected);
     for (const p of this.players) { p.folded=false; p.allIn=false; p.bet=0; p.hand=[]; }
     const gs = this.gameState;
@@ -444,11 +449,36 @@ export class PokerRoom {
           const chips = (persisted && persisted.chips > 0) ? persisted.chips : this.INITIAL_CHIPS;
           const debt  = persisted ? (persisted.debt || 0) : 0;
           this.players.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
+          // 新玩家加入导致人数变化，清空开始投票，需重新发起
+          if (this.startVotes.size > 0) {
+            this.startVotes.clear();
+            this._broadcast({type:'message',message:`有新玩家加入，开始投票已重置`});
+          }
           this._broadcastState(); this._broadcast({type:'message',message:`${name} 加入房间（筹码 ${chips}${debt>0?' · 欠款 '+debt:''}）`});
         }
         break;
       }
-      case 'start_game': this._startGame(); break;
+      case 'start_game': {
+        if (this.gameState.stage !== 'waiting') {
+          this._sendTo(playerId,{type:'error',message:'游戏已在进行中'}); break;
+        }
+        const startPlayer = this.players.find(p => p.id === playerId);
+        if (!startPlayer) break;
+        if (this.startVotes.has(playerId)) {
+          // 再次点击 = 撤回开始投票
+          this.startVotes.delete(playerId);
+          this._broadcastState();
+          this._broadcast({type:'message',message:`${startPlayer.name} 撤回了开始投票`});
+        } else {
+          this.startVotes.add(playerId);
+          const connectedPlayers = this.players.filter(p => p.connected && p.chips > 0);
+          const allVoted = connectedPlayers.length >= 2 && connectedPlayers.every(p => this.startVotes.has(p.id));
+          this._broadcastState();
+          this._broadcast({type:'message',message:`${startPlayer.name} 准备开始（${this.startVotes.size}/${connectedPlayers.length}）`});
+          if (allVoted) this._startGame();
+        }
+        break;
+      }
       case 'action': this._handleAction(playerId,msg.action,msg.amount); break;
 
       case 'borrow': {
