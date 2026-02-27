@@ -67,6 +67,11 @@ const btnCall   = document.getElementById('btn-call');
 const btnRaise  = document.getElementById('btn-raise');
 const btnAllin  = document.getElementById('btn-allin');
 const raiseInput = document.getElementById('raise-input');
+const btnBorrow   = document.getElementById('btn-borrow');
+const btnDissolve = document.getElementById('btn-dissolve');
+const dissolveBar   = document.getElementById('dissolve-bar');
+const dissolveCount = document.getElementById('dissolve-count');
+const dissolveTotal = document.getElementById('dissolve-total');
 
 // ═══════════════════════════════════════════════
 // §4  WebSocket 管理
@@ -151,6 +156,13 @@ function handleServerMessage(msg) {
       renderShowdown(msg);
       break;
 
+    case 'dissolve':
+      alert(msg.message || '房间已解散！');
+      // 清除本地 playerId，回到初始状态
+      localStorage.removeItem('playerId');
+      location.reload();
+      break;
+
     case 'message':
       appendLog(msg.message, 'system');
       break;
@@ -228,6 +240,12 @@ function renderPlayerList(state) {
       betLine.textContent = `下注: ${p.bet}`;
       info.appendChild(betLine);
     }
+    if (p.debt > 0) {
+      const debtLine = document.createElement('div');
+      debtLine.className   = 'player-debt';
+      debtLine.textContent = `欠款: ${p.debt}`;
+      info.appendChild(debtLine);
+    }
 
     info.prepend(nameLine, chipsLine);
 
@@ -241,6 +259,7 @@ function renderPlayerList(state) {
     if (!p.connected && !p.folded) badges.appendChild(makeBadge('离线', 'badge-off'));
     if (p.allIn)    badges.appendChild(makeBadge('全押', 'badge-ai'));
     if (p.folded)   badges.appendChild(makeBadge('弃牌', 'badge-off'));
+    if (p.votedDissolve) badges.appendChild(makeBadge('解散✔', 'badge-dissolve'));
 
     row.appendChild(avatar);
     row.appendChild(info);
@@ -335,6 +354,28 @@ function updateButtons(state) {
 
   // Start Game：仅在等待阶段可用
   btnStart.disabled  = state.stage !== 'waiting';
+
+  // 借筹码：仅待机阶段可用
+  btnBorrow.disabled = state.stage !== 'waiting';
+
+  // 解散房间按钮状态
+  const selfPlayer2 = state.players.find(p => p.id === state.selfId);
+  if (selfPlayer2?.votedDissolve) {
+    btnDissolve.textContent = '撤回解散';
+    btnDissolve.classList.add('voted');
+  } else {
+    btnDissolve.textContent = '🚪 解散房间';
+    btnDissolve.classList.remove('voted');
+  }
+
+  // 解散投票进度条
+  if (state.dissolveVotes > 0) {
+    dissolveBar.classList.add('visible');
+    dissolveCount.textContent = state.dissolveVotes;
+    dissolveTotal.textContent = state.dissolveTotal;
+  } else {
+    dissolveBar.classList.remove('visible');
+  }
 
   // 行动按钮
   btnFold.disabled  = !canAct;
@@ -465,6 +506,16 @@ btnRaise.addEventListener('click', () => {
 /* 全押 */
 btnAllin.addEventListener('click', () => {
   send({ type: 'action', action: 'allin' });
+});
+
+/* 借筹码（每次 +1000，记入欠款） */
+btnBorrow.addEventListener('click', () => {
+  send({ type: 'borrow' });
+});
+
+/* 解散房间（投票 / 撤票） */
+btnDissolve.addEventListener('click', () => {
+  send({ type: 'dissolve_vote' });
 });
 
 /* 关闭摊牌覆盖层 */

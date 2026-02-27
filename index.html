@@ -200,6 +200,30 @@
       gap: 6px;
     }
 
+    /* 欠款标签 ─────── */
+    .player-debt { font-size: .7rem; color: #ef9a9a; }
+
+    /* 解散投票标签 ─── */
+    .badge-dissolve { background: #c62828; animation: pulse .8s infinite alternate; }
+    @keyframes pulse { from { opacity: 1; } to { opacity: .5; } }
+
+    /* 解散状态提示 ─── */
+    #dissolve-bar {
+      display: none;
+      background: rgba(198,40,40,.18);
+      border: 1px solid #c62828;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .8rem;
+      color: #ef9a9a;
+      text-align: center;
+    }
+    #dissolve-bar.visible { display: block; }
+
+    #btn-borrow  { background: #0277bd; color: #fff; }
+    #btn-dissolve { background: #6d4c41; color: #fff; }
+    #btn-dissolve.voted { background: #c62828; }
+
     /* Message log ────── */
     #msg-log {
       background: rgba(0,0,0,.4);
@@ -311,11 +335,16 @@
       </div>
     </div>
 
+    <!-- 解散提示条 -->
+    <div id="dissolve-bar">🗳 解散投票进行中：<span id="dissolve-count">0</span>/<span id="dissolve-total">0</span> 人同意</div>
+
     <!-- 行动按钮 -->
     <div id="action-area">
       <h4>行动</h4>
       <div id="action-buttons">
         <button id="btn-start"  class="action-btn">🎮 开始游戏</button>
+        <button id="btn-borrow" class="action-btn">💳 借筹码(+1000)</button>
+        <button id="btn-dissolve" class="action-btn">🚪 解散房间</button>
         <button id="btn-fold"   class="action-btn" disabled>弃牌</button>
         <button id="btn-check"  class="action-btn" disabled>过牌</button>
         <button id="btn-call"   class="action-btn" disabled>跟注</button>

@@ -1,14 +1,10 @@
 /**
  * worker.js — Cloudflare Worker + Durable Objects · 单房间德州扑克
- *
- * 架构说明：
- *  - 所有 WebSocket 连接统一路由到同一个 Durable Object 实例（"main-room"）
- *  - Durable Object 持有唯一共享内存，解决多节点状态不一致问题
- *  - 游戏逻辑、牌型判断、断线重连逻辑全部保留
+ * v2: 持久筹码、借筹码功能、解散房间投票
  */
 
 // ═══════════════════════════════════════════════
-// §1  主 Worker 入口 — 将所有请求路由到唯一 DO 实例
+// §1  主 Worker 入口
 // ═══════════════════════════════════════════════
 
 export default {
@@ -22,7 +18,6 @@ export default {
         },
       });
     }
-    // 全部请求路由到唯一 DO 实例 "main-room"，确保所有人在同一房间
     const id   = env.POKER_ROOM.idFromName('main-room');
     const stub = env.POKER_ROOM.get(id);
     return stub.fetch(request);
@@ -30,7 +25,7 @@ export default {
 };
 
 // ═══════════════════════════════════════════════
-// §2  Durable Object 类 — 持有全部游戏状态
+// §2  Durable Object
 // ═══════════════════════════════════════════════
 
 export class PokerRoom {
@@ -51,8 +46,15 @@ export class PokerRoom {
       actedSet:           new Set(),
       lastRaiserIndex:    -1,
     };
-    this.operationQueue  = Promise.resolve();
+    this.operationQueue   = Promise.resolve();
     this.cleanupScheduled = false;
+    this.dissolveVotes    = new Set();
+
+    // 从持久存储加载玩家数据（筹码 + 欠款）
+    this.persistedPlayers = {};
+    this.state.blockConcurrencyWhile(async () => {
+      this.persistedPlayers = (await this.state.storage.get('persistedPlayers')) || {};
+    });
   }
 
   async fetch(request) {
@@ -199,11 +201,16 @@ export class PokerRoom {
 
   _broadcastState() {
     const gs = this.gameState;
+    const connectedIds   = new Set(this.players.filter(p => p.connected).map(p => p.id));
+    const dissolveTotal  = connectedIds.size;
+    const dissolveCount  = [...this.dissolveVotes].filter(id => connectedIds.has(id)).length;
     const pub = this.players.map((p, i) => ({
       id: p.id, name: p.name, chips: p.chips, bet: p.bet,
       folded: p.folded, allIn: p.allIn, connected: p.connected,
       isDealer: i===gs.dealerIndex, isSB: i===gs.smallBlindIndex,
       isBB: i===gs.bigBlindIndex, handCount: p.hand?p.hand.length:0,
+      debt: p.debt || 0,
+      votedDissolve: this.dissolveVotes.has(p.id),
     }));
     for (const player of this.players) {
       const ws = this.clients.get(player.id);
@@ -216,6 +223,7 @@ export class PokerRoom {
           dealerIndex: gs.dealerIndex, smallBlindIndex: gs.smallBlindIndex,
           bigBlindIndex: gs.bigBlindIndex,
           selfHand: player.hand || [], selfId: player.id,
+          dissolveVotes: dissolveCount, dissolveTotal,
         }));
       } catch(_) {}
     }
@@ -243,6 +251,7 @@ export class PokerRoom {
     if (this.gameState.stage !== 'waiting') {
       this._broadcast({ type: 'error', message: '游戏已在进行中' }); return;
     }
+    this.dissolveVotes.clear();
     this.players = this.players.filter(p => p.chips > 0 || p.connected);
     for (const p of this.players) { p.folded=false; p.allIn=false; p.bet=0; p.hand=[]; }
     const gs = this.gameState;
@@ -259,7 +268,7 @@ export class PokerRoom {
     gs.pot=sbAmt+bbAmt; gs.currentBet=bbAmt; gs.stage='preflop';
     gs.currentPlayerIndex=this._nextActionableIndex((gs.bigBlindIndex+1)%this.players.length);
     this._broadcastState();
-    this._broadcast({ type:'message', message:`🃏 新一局开始！庄家：${this.players[gs.dealerIndex].name}，SB：${sbP.name}，BB：${bbP.name}` });
+    this._broadcast({ type:'message', message:`🃏 新一局开始！庄家：${this.players[gs.dealerIndex].name}，小盲：${sbP.name}，大盲：${bbP.name}` });
   }
 
   _handleAction(playerId, action, amount) {
@@ -391,8 +400,17 @@ export class PokerRoom {
     gs.stage='waiting'; gs.community=[]; gs.pot=0;
     gs.currentBet=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
     for(const p of this.players){p.folded=false;p.allIn=false;p.bet=0;p.hand=[];}
+    this._savePlayerData();
     this._broadcastState();
     this._broadcast({type:'message',message:'本局结束，等待开始新一局…'});
+  }
+
+  /** 将所有玩家的筹码和欠款写入持久存储 */
+  _savePlayerData() {
+    for (const p of this.players) {
+      this.persistedPlayers[p.id] = { chips: p.chips, debt: p.debt || 0, name: p.name };
+    }
+    this.state.storage.put('persistedPlayers', this.persistedPlayers).catch(() => {});
   }
 
   _cleanupStale() {
@@ -421,13 +439,62 @@ export class PokerRoom {
         } else {
           if(this.players.length>=this.MAX_PLAYERS){this._sendTo(playerId,{type:'error',message:'房间已满（最多 8 人）'});return;}
           const name=(msg.name||'').trim()||`玩家${this.players.length+1}`;
-          this.players.push({id:playerId,name,chips:this.INITIAL_CHIPS,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
-          this._broadcastState(); this._broadcast({type:'message',message:`${name} 加入房间（初始筹码 ${this.INITIAL_CHIPS}）`});
+          // 从持久化存储恢复筹码和欠款
+          const persisted = this.persistedPlayers[playerId];
+          const chips = (persisted && persisted.chips > 0) ? persisted.chips : this.INITIAL_CHIPS;
+          const debt  = persisted ? (persisted.debt || 0) : 0;
+          this.players.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
+          this._broadcastState(); this._broadcast({type:'message',message:`${name} 加入房间（筹码 ${chips}${debt>0?' · 欠款 '+debt:''}）`});
         }
         break;
       }
       case 'start_game': this._startGame(); break;
       case 'action': this._handleAction(playerId,msg.action,msg.amount); break;
+
+      case 'borrow': {
+        if (this.gameState.stage !== 'waiting') {
+          this._sendTo(playerId,{type:'error',message:'只能在等待阶段借筹码'}); return;
+        }
+        const player = this.players.find(p => p.id === playerId);
+        if (!player) return;
+        const BORROW_AMOUNT = 1000;
+        player.chips += BORROW_AMOUNT;
+        player.debt   = (player.debt || 0) + BORROW_AMOUNT;
+        this._savePlayerData();
+        this._broadcastState();
+        this._broadcast({type:'message',message:`💳 ${player.name} 向银行借了 ${BORROW_AMOUNT} 筹码（累计欠款 ${player.debt}）`});
+        break;
+      }
+
+      case 'dissolve_vote': {
+        const player = this.players.find(p => p.id === playerId);
+        if (!player) return;
+        if (this.dissolveVotes.has(playerId)) {
+          // 再次点击 = 撤回投票
+          this.dissolveVotes.delete(playerId);
+          this._broadcastState();
+          this._broadcast({type:'message',message:`${player.name} 撤回了解散投票`});
+        } else {
+          this.dissolveVotes.add(playerId);
+          const connectedPlayers = this.players.filter(p => p.connected);
+          const allVoted = connectedPlayers.length > 0 && connectedPlayers.every(p => this.dissolveVotes.has(p.id));
+          this._broadcastState();
+          this._broadcast({type:'message',message:`${player.name} 投票解散（${this.dissolveVotes.size}/${connectedPlayers.length}）`});
+          if (allVoted) {
+            this._broadcast({type:'dissolve',message:'所有人同意，房间已解散！'});
+            // 清空房间并重置持久化数据
+            this.players = [];
+            this.dissolveVotes.clear();
+            this.persistedPlayers = {};
+            this.state.storage.delete('persistedPlayers').catch(() => {});
+            const gs = this.gameState;
+            gs.stage='waiting'; gs.community=[]; gs.pot=0;
+            gs.currentBet=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
+          }
+        }
+        break;
+      }
+
       default: this._sendTo(playerId,{type:'error',message:`未知消息类型: ${msg.type}`});
     }
   }
