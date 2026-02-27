@@ -56,7 +56,6 @@ const playerList       = document.getElementById('player-list');
 const communityCards   = document.getElementById('community-cards');
 const handCard0        = document.getElementById('hand-0');
 const handCard1        = document.getElementById('hand-1');
-const msgLog           = document.getElementById('msg-log');
 const showdownOverlay  = document.getElementById('showdown-overlay');
 const showdownResults  = document.getElementById('showdown-results');
 
@@ -475,13 +474,11 @@ function renderShowdown(msg) {
 // ═══════════════════════════════════════════════
 
 function appendLog(text, cls = '') {
-  const line = document.createElement('div');
-  line.className   = `log-line ${cls}`.trim();
-  line.textContent = text;
-  // column-reverse 布局：prepend 使最新消息在顶
-  msgLog.prepend(line);
-  // 保留最近 80 条
-  while (msgLog.childElementCount > 80) msgLog.lastChild.remove();
+  if (cls === 'error') {
+    console.warn('[Poker]', text);
+  } else {
+    console.log('[Poker]', text);
+  }
 }
 
 // ═══════════════════════════════════════════════

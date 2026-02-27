@@ -238,19 +238,6 @@
     }
     #start-vote-bar.visible { display: block; }
 
-    /* Message log ────── */
-    #msg-log {
-      background: rgba(0,0,0,.4);
-      border: 1px solid #2e5e2e;
-      border-radius: 8px; padding: 8px 12px;
-      height: 110px; overflow-y: auto;
-      font-size: .78rem; display: flex;
-      flex-direction: column-reverse; gap: 2px;
-    }
-    .log-line { opacity: .85; line-height: 1.4; }
-    .log-line.system { color: #80cbc4; }
-    .log-line.error  { color: #ef9a9a; }
-
     /* Showdown overlay ─ */
     #showdown-overlay {
       position: fixed; inset: 0;
@@ -371,9 +358,6 @@
         <button id="btn-allin"  class="action-btn" disabled>全押</button>
       </div>
     </div>
-
-    <!-- 消息日志 -->
-    <div id="msg-log"></div>
 
   </div><!-- #game-area -->
 </div><!-- #game-wrap -->
