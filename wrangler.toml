@@ -13,8 +13,8 @@ class_name = "PokerRoom"
 
 # ── Durable Objects 迁移（首次部署必须） ────────────
 [[migrations]]
-tag         = "v1"
-new_classes = ["PokerRoom"]
+tag                = "v1"
+new_sqlite_classes = ["PokerRoom"]
 
 # ── 路由（自定义域名）─────────────────────────────
 [[routes]]
