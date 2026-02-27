@@ -9,11 +9,10 @@ compatibility_date = "2024-01-01"         # API 兼容基准日期
 # ── 运行时设置 ─────────────────────────────────────
 # WebSocket 支持无需额外配置，普通 Worker 默认支持
 
-# ── 路由（可选）────────────────────────────────────
-# 如果你有自定义域名，取消注释并填写：
-# [[routes]]
-# pattern = "poker.example.com/*"
-# zone_name = "example.com"
+# ── 路由（自定义域名）─────────────────────────────
+[[routes]]
+pattern = "poker.cc8170.top/*"
+zone_name = "cc8170.top"
 
 # ── 环境：生产 ────────────────────────────────────
 [env.production]
