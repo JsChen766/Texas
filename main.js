@@ -170,10 +170,10 @@ function handleServerMessage(msg) {
 
 const STAGE_NAMES = {
   waiting:  '等待开始',
-  preflop:  'Pre-flop（翻牌前）',
-  flop:     'Flop（翻牌）',
-  turn:     'Turn（转牌）',
-  river:    'River（河牌）',
+  preflop:  '翻牌前',
+  flop:     '翻牌',
+  turn:     '转牌',
+  river:    '河牌',
   showdown: '摊牌',
 };
 
@@ -235,9 +235,9 @@ function renderPlayerList(state) {
     const badges = document.createElement('div');
     badges.style.cssText = 'display:flex;flex-direction:column;gap:2px;align-items:flex-end';
 
-    if (p.isDealer) badges.appendChild(makeBadge('D', 'badge-D'));
-    if (p.isSB)     badges.appendChild(makeBadge('SB', 'badge-SB'));
-    if (p.isBB)     badges.appendChild(makeBadge('BB', 'badge-BB'));
+    if (p.isDealer) badges.appendChild(makeBadge('庄', 'badge-D'));
+    if (p.isSB)     badges.appendChild(makeBadge('小盲', 'badge-SB'));
+    if (p.isBB)     badges.appendChild(makeBadge('大盲', 'badge-BB'));
     if (!p.connected && !p.folded) badges.appendChild(makeBadge('离线', 'badge-off'));
     if (p.allIn)    badges.appendChild(makeBadge('全押', 'badge-ai'));
     if (p.folded)   badges.appendChild(makeBadge('弃牌', 'badge-off'));
@@ -349,9 +349,9 @@ function updateButtons(state) {
   btnCall.disabled = !canCall;
   if (canCall) {
     const callAmt = Math.min(state.currentBet - (selfPlayer?.bet ?? 0), selfPlayer?.chips ?? 0);
-    btnCall.textContent = `跟注 Call (${callAmt})`;
+    btnCall.textContent = `跟注 (${callAmt})`;
   } else {
-    btnCall.textContent = '跟注 Call';
+    btnCall.textContent = '跟注';
   }
 
   // Raise

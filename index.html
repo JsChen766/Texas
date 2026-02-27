@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Texas Hold'em · 德州扑克</title>
+  <title>德州扑克</title>
   <style>
     /* ── Reset & Base ─────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -186,10 +186,18 @@
     #btn-allin  { background: #4a148c; color: #fff; }
 
     #raise-input {
-      width: 80px; padding: 7px 10px;
+      width: 90px; padding: 7px 10px;
       border-radius: 8px; border: 2px solid #e65100;
       background: #1a1a1a; color: #fff;
       font-size: .9rem; outline: none;
+      flex-shrink: 0;
+    }
+
+    /* 加注区：输入框 + 按钮同行 */
+    .raise-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     /* Message log ────── */
@@ -246,7 +254,7 @@
 
 <!-- ══ Login Screen ══════════════════════════════ -->
 <div id="login-screen">
-  <h2>♠ 德州扑克 Texas Hold'em</h2>
+  <h2>♠ 德州扑克</h2>
   <p style="opacity:.6;font-size:.85rem">请输入你的昵称加入房间</p>
   <input id="name-input" type="text" maxlength="16" placeholder="你的昵称…" autocomplete="off" />
   <button id="btn-enter">进入房间</button>
@@ -260,7 +268,7 @@
 </div>
 
 <!-- ══ Main UI ════════════════════════════════════ -->
-<h1>♠ Texas Hold'em</h1>
+<h1>♠ 德州扑克</h1>
 <div id="conn-status" class="disconnected">⚫ 未连接</div>
 
 <div id="game-wrap">
@@ -308,12 +316,14 @@
       <h4>行动</h4>
       <div id="action-buttons">
         <button id="btn-start"  class="action-btn">🎮 开始游戏</button>
-        <button id="btn-fold"   class="action-btn" disabled>弃牌 Fold</button>
-        <button id="btn-check"  class="action-btn" disabled>过牌 Check</button>
-        <button id="btn-call"   class="action-btn" disabled>跟注 Call</button>
-        <input  id="raise-input" type="number" min="1" placeholder="加注额" disabled />
-        <button id="btn-raise"  class="action-btn" disabled>加注 Raise</button>
-        <button id="btn-allin"  class="action-btn" disabled>全押 All-in</button>
+        <button id="btn-fold"   class="action-btn" disabled>弃牌</button>
+        <button id="btn-check"  class="action-btn" disabled>过牌</button>
+        <button id="btn-call"   class="action-btn" disabled>跟注</button>
+        <div class="raise-group">
+          <input  id="raise-input" type="number" min="1" placeholder="加注金额" disabled />
+          <button id="btn-raise"  class="action-btn" disabled>加注</button>
+        </div>
+        <button id="btn-allin"  class="action-btn" disabled>全押</button>
       </div>
     </div>
 
