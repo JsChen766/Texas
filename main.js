@@ -23,7 +23,7 @@
  * 本地调试（wrangler dev）时使用：
  *   ws://localhost:8787
  */
-const WORKER_WS_URL = 'wss://YOUR_WORKER_SUBDOMAIN.workers.dev';
+const WORKER_WS_URL = 'wss://poker.cc8170.top';
 
 const RECONNECT_DELAY_MS   = 2000;   // 初始重连延迟
 const RECONNECT_MAX_DELAY  = 30000;  // 最大重连延迟
