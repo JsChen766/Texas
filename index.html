@@ -257,28 +257,7 @@
     @keyframes pulse { from { opacity: 1; } to { opacity: .5; } }
 
     /* 轮到自己 ─────── */
-    #my-turn-banner {
-      display: none;
-      position: fixed;
-      top: 38%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255,214,0,.95);
-      color: #111;
-      font-size: 1.5rem; font-weight: 800;
-      padding: 14px 36px;
-      border-radius: 14px;
-      z-index: 200;
-      box-shadow: 0 4px 24px rgba(255,214,0,.55);
-      pointer-events: none;
-      animation: my-turn-fade 2.2s forwards;
-    }
-    @keyframes my-turn-fade {
-      0%   { opacity:0; transform:translate(-50%,-60%) scale(.85); }
-      18%  { opacity:1; transform:translate(-50%,-50%) scale(1); }
-      70%  { opacity:1; }
-      100% { opacity:0; transform:translate(-50%,-50%) scale(1); }
-    }
-    body.my-turn #action-area {
+    body.my-turn #game-area {
       animation: action-glow .7s infinite alternate;
     }
     @keyframes action-glow {
@@ -379,9 +358,6 @@
 
 <!-- 退出房间按钮（右上角固定，进入房间后显示） -->
 <button id="btn-exit">🚪 退出房间</button>
-
-<!-- 轮到自己时弹出提示横幅 -->
-<div id="my-turn-banner">⚡ 轮到你了！</div>
 
 <!-- ══ Main UI ════════════════════════════════════ -->
 <h1>♠ 德 !</h1>
