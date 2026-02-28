@@ -91,7 +91,7 @@ td{padding:8px;border-bottom:1px solid #21262d;vertical-align:middle}
   </div>
   <div class="card">
     <h2>👥 人员管理</h2>
-    <table id="pt"><thead><tr><th>名称</th><th>角色</th><th>🍓</th><th>欠款</th><th>连接</th><th>操作</th></tr></thead><tbody></tbody></table>
+    <table id="pt"><thead><tr><th>名称</th><th>角色</th><th>🍓</th><th>赊</th><th>连接</th><th>操作</th></tr></thead><tbody></tbody></table>
   </div>
   <div class="card">
     <h2>⚙️ 游戏配置</h2>
@@ -172,7 +172,7 @@ async function load(){
 }
 async function kickP(id){if(!confirm('确认将该玩家移至观众席？'))return;var r=await api('/admin/kick','POST',{playerId:id});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
 async function giveC(id,name){var amt=prompt('为 '+name+' 调整🍓（正/负数）：');if(amt===null)return;var n=parseInt(amt,10);if(isNaN(n)){alert('请输入有效数字');return;}var r=await api('/admin/give-chips','POST',{playerId:id,amount:n});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
-async function rdbt(id,name){if(!confirm('确认清除 '+name+' 的全部欠款？'))return;var r=await api('/admin/reset-debt','POST',{playerId:id});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
+async function rdbt(id,name){if(!confirm('确认清除 '+name+' 的全部赊？'))return;var r=await api('/admin/reset-debt','POST',{playerId:id});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
 async function saveConfig(){
   var body={smallBlind:+document.getElementById('csb').value,bigBlind:+document.getElementById('cbb').value,initialChips:+document.getElementById('cic').value,maxSeats:+document.getElementById('cms').value,disconnectTtl:+document.getElementById('cdt').value*60000,showdownDelay:+document.getElementById('csd').value*1000};
   var r=await api('/admin/config','POST',body);showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);
@@ -357,7 +357,7 @@ export class PokerRoom {
           target.debt = 0;
           this._savePlayerData();
           this._broadcastState();
-          return this._adminJson({ message: `${target.name} 欠款已清零` });
+          return this._adminJson({ message: `${target.name} 赊已清零` });
         }
 
         // 强制解散
@@ -910,7 +910,7 @@ export class PokerRoom {
           const debt  = persisted ? (persisted.debt || 0) : 0;
           this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
           this._broadcastState();
-          this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（🍓 ${chips}${debt>0?' · 欠款 '+debt:''}）` });
+          this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（🍓 ${chips}${debt>0?' · 赊 '+debt:''}）` });
         }
         break;
       }
@@ -984,7 +984,7 @@ export class PokerRoom {
         if (!person) return;
         person.chips += 1000; person.debt = (person.debt||0) + 1000;
         this._savePlayerData(); this._broadcastState();
-        this._broadcast({type:'message',message:`💳 ${person.name} 向银行借了 1000 🍓（累计欠款 ${person.debt}）`});
+        this._broadcast({type:'message',message:`💳 ${person.name} 向银行借了 1000 🍓（累计赊 ${person.debt}）`});
         break;
       }
 
