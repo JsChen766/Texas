@@ -1003,7 +1003,7 @@ export class PokerRoom {
           const needed = Math.max(2, Math.floor(allConnected.length / 2));
           const count  = [...this.dissolveVotes].filter(id=>allConnected.find(p=>p.id===id)).length;
           this._broadcastState();
-          this._broadcast({type:'message',message:`${person.name} 投票解散（${count}/${allConnected.length}，需要 ${needed}）`});
+          this._broadcast({type:'message',message:`${person.name} 投票解散（${count}/${needed}，需要 ${needed} 票）`});
           if (needed > 0 && count >= needed) {
             this._broadcast({type:'dissolve',message:'超过半数同意，房间已解散！'});
             this.players=[]; this.audience=[];
