@@ -13,8 +13,8 @@ export default {
       return new Response(null, {
         headers: {
           'Access-Control-Allow-Origin':  '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Upgrade',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Upgrade, Authorization',
         },
       });
     }
@@ -25,7 +25,167 @@ export default {
 };
 
 // ═══════════════════════════════════════════════
-// §2  Durable Object
+// §3  Admin Panel HTML（内联）
+// ═══════════════════════════════════════════════
+
+const ADMIN_HTML = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>♠ 管理后台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d1117;color:#e6edf3;font-family:system-ui,sans-serif;padding:20px}
+h1{color:#58a6ff;margin-bottom:20px}
+h2{color:#79c0ff;margin:20px 0 10px;border-bottom:1px solid #21262d;padding-bottom:6px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:16px;margin-bottom:16px}
+label{display:block;font-size:.85rem;color:#8b949e;margin-bottom:4px}
+input{background:#0d1117;border:1px solid #30363d;color:#e6edf3;padding:8px 12px;border-radius:6px;width:100%;margin-bottom:10px;font-size:.9rem}
+input:focus{outline:none;border-color:#58a6ff}
+.btn{padding:8px 18px;border:none;border-radius:6px;cursor:pointer;font-size:.85rem;font-weight:600;margin-right:6px}
+.btn:hover{opacity:.85}
+.btn-g{background:#238636;color:#fff}.btn-r{background:#da3633;color:#fff}
+.btn-y{background:#d29922;color:#000}.btn-b{background:#1f6feb;color:#fff}
+.btn-s{background:#30363d;color:#e6edf3;padding:4px 10px;font-size:.75rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:#21262d;padding:8px;text-align:left;color:#8b949e}
+td{padding:8px;border-bottom:1px solid #21262d;vertical-align:middle}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.75rem}
+.bp{background:#1f6feb}.ba{background:#30363d}
+.stat-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px}
+.sc{background:#21262d;border-radius:8px;padding:10px 18px;text-align:center;min-width:100px}
+.sc .n{font-size:1.6rem;font-weight:700;color:#58a6ff}
+.sc .l{font-size:.75rem;color:#8b949e}
+.msg{padding:8px 14px;border-radius:6px;font-size:.85rem;margin-bottom:10px;display:none}
+.mo{background:rgba(35,134,54,.3);border:1px solid #238636;color:#56d364}
+.me{background:rgba(218,54,51,.3);border:1px solid #da3633;color:#ff7b72}
+#ls{max-width:360px;margin:80px auto}
+#ms{display:none}
+</style>
+</head>
+<body>
+<div id="ls">
+  <h1 style="text-align:center">♠ 管理后台</h1>
+  <div class="card">
+    <div id="lm" class="msg me"></div>
+    <label>管理密码</label>
+    <input type="password" id="pi" placeholder="输入密码..." />
+    <button class="btn btn-g" style="width:100%" onclick="doLogin()">登录</button>
+  </div>
+</div>
+<div id="ms">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h1>♠ 德州扑克 管理后台</h1>
+    <button class="btn btn-y" onclick="doLogout()">退出登录</button>
+  </div>
+  <div id="mm" class="msg"></div>
+  <div class="card">
+    <h2>📊 房间状态 <span id="ri" style="font-size:.75rem;color:#8b949e"></span></h2>
+    <div class="stat-row">
+      <div class="sc"><div class="n" id="ss">-</div><div class="l">在座玩家</div></div>
+      <div class="sc"><div class="n" id="sa">-</div><div class="l">观众</div></div>
+      <div class="sc"><div class="n" id="sp">-</div><div class="l">底池</div></div>
+      <div class="sc"><div class="n" id="sg">-</div><div class="l">阶段</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>👥 人员管理</h2>
+    <table id="pt"><thead><tr><th>名称</th><th>角色</th><th>筹码</th><th>欠款</th><th>连接</th><th>操作</th></tr></thead><tbody></tbody></table>
+  </div>
+  <div class="card">
+    <h2>⚙️ 游戏配置</h2>
+    <div class="grid2">
+      <div><label>小盲注</label><input type="number" id="csb" min="1"/></div>
+      <div><label>大盲注</label><input type="number" id="cbb" min="1"/></div>
+      <div><label>初始筹码</label><input type="number" id="cic" min="100" step="100"/></div>
+      <div><label>最大座位数</label><input type="number" id="cms" min="2" max="20"/></div>
+      <div><label>断线超时（分钟）</label><input type="number" id="cdt" min="1"/></div>
+      <div><label>摊牌延迟（秒）</label><input type="number" id="csd" min="1"/></div>
+    </div>
+    <button class="btn btn-g" onclick="saveConfig()">保存配置</button>
+  </div>
+  <div class="card">
+    <h2>🚨 房间操作</h2>
+    <button class="btn btn-r" onclick="forceDiss()">强制解散房间（清除所有数据）</button>
+  </div>
+  <div class="card">
+    <h2>🔑 修改管理密码</h2>
+    <div class="grid2">
+      <div><label>新密码</label><input type="password" id="np" placeholder="新密码"/></div>
+      <div><label>确认密码</label><input type="password" id="np2" placeholder="再次输入"/></div>
+    </div>
+    <button class="btn btn-b" onclick="changePwd()">修改密码</button>
+  </div>
+</div>
+<script>
+var BASE=location.origin,TOKEN=localStorage.getItem('at')||'',timer=null;
+function showMsg(el,txt,ok){el.textContent=txt;el.style.display='block';el.className='msg '+(ok?'mo':'me');setTimeout(function(){el.style.display='none';},4000);}
+async function api(path,method,body){
+  var opts={method:method||'GET',headers:{'Authorization':'Bearer '+TOKEN,'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  var r=await fetch(BASE+path,opts);
+  return {ok:r.ok,status:r.status,data:await r.json().catch(function(){return {};})};
+}
+async function doLogin(){
+  var pwd=document.getElementById('pi').value;
+  if(!pwd)return;
+  var r=await api('/admin/login','POST',{password:pwd});
+  if(r.ok&&r.data.token){TOKEN=r.data.token;localStorage.setItem('at',TOKEN);showMain();}
+  else showMsg(document.getElementById('lm'),r.data.error||'登录失败',false);
+}
+function doLogout(){TOKEN='';localStorage.removeItem('at');clearInterval(timer);document.getElementById('ms').style.display='none';document.getElementById('ls').style.display='';}
+function showMain(){document.getElementById('ls').style.display='none';document.getElementById('ms').style.display='';load();timer=setInterval(load,5000);}
+var STAGES={waiting:'等待',preflop:'翻牌前',flop:'翻牌',turn:'转牌',river:'河牌',showdown:'摊牌'};
+async function load(){
+  var r=await api('/admin/state');
+  if(r.status===401){doLogout();return;}
+  if(!r.ok)return;
+  var d=r.data;
+  document.getElementById('ss').textContent=d.seated;
+  document.getElementById('sa').textContent=d.audience;
+  document.getElementById('sp').textContent=d.pot;
+  document.getElementById('sg').textContent=STAGES[d.stage]||d.stage;
+  document.getElementById('ri').textContent='最后更新：'+new Date().toLocaleTimeString();
+  if(d.config){
+    document.getElementById('csb').value=d.config.smallBlind;
+    document.getElementById('cbb').value=d.config.bigBlind;
+    document.getElementById('cic').value=d.config.initialChips;
+    document.getElementById('cms').value=d.config.maxSeats;
+    document.getElementById('cdt').value=Math.round(d.config.disconnectTtl/60000);
+    document.getElementById('csd').value=Math.round(d.config.showdownDelay/1000);
+  }
+  var tb=document.querySelector('#pt tbody');tb.innerHTML='';
+  (d.players||[]).forEach(function(p){
+    var tr=document.createElement('tr');
+    var role=p.role==='player'?'<span class="badge bp">玩家</span>':'<span class="badge ba">观众</span>';
+    var ops='';
+    if(p.role==='player')ops+='<button class="btn btn-y btn-s" onclick="kickP(\\''+p.id+'\\')">→观众</button> ';
+    ops+='<button class="btn btn-b btn-s" onclick="giveC(\\''+p.id+'\\',\\''+p.name+'\\')">筹码</button> ';
+    ops+='<button class="btn btn-s" onclick="rdbt(\\''+p.id+'\\',\\''+p.name+'\\')">清欠款</button>';
+    tr.innerHTML='<td>'+p.name+'</td><td>'+role+'</td><td>'+p.chips+'</td>'
+      +'<td style="color:'+(p.debt>0?'#ff7b72':'#8b949e')+'">'+( p.debt||0)+'</td>'
+      +'<td>'+(p.connected?'🟢':'🔴')+(p.pendingLeave?' <small>让座中</small>':'')+'</td>'
+      +'<td>'+ops+'</td>';
+    tb.appendChild(tr);
+  });
+}
+async function kickP(id){if(!confirm('确认将该玩家移至观众席？'))return;var r=await api('/admin/kick','POST',{playerId:id});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
+async function giveC(id,name){var amt=prompt('为 '+name+' 调整筹码（正/负数）：');if(amt===null)return;var n=parseInt(amt,10);if(isNaN(n)){alert('请输入有效数字');return;}var r=await api('/admin/give-chips','POST',{playerId:id,amount:n});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
+async function rdbt(id,name){if(!confirm('确认清除 '+name+' 的全部欠款？'))return;var r=await api('/admin/reset-debt','POST',{playerId:id});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
+async function saveConfig(){
+  var body={smallBlind:+document.getElementById('csb').value,bigBlind:+document.getElementById('cbb').value,initialChips:+document.getElementById('cic').value,maxSeats:+document.getElementById('cms').value,disconnectTtl:+document.getElementById('cdt').value*60000,showdownDelay:+document.getElementById('csd').value*1000};
+  var r=await api('/admin/config','POST',body);showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);
+}
+async function forceDiss(){if(!confirm('确认强制解散？所有筹码数据将被清除！'))return;var r=await api('/admin/dissolve','POST');showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
+async function changePwd(){var p1=document.getElementById('np').value,p2=document.getElementById('np2').value;if(!p1){showMsg(document.getElementById('mm'),'密码不能为空',false);return;}if(p1!==p2){showMsg(document.getElementById('mm'),'两次密码不一致',false);return;}var r=await api('/admin/change-password','POST',{newPassword:p1});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);if(r.ok){document.getElementById('np').value='';document.getElementById('np2').value='';}}
+if(TOKEN)api('/admin/state').then(function(r){if(r.ok)showMain();else{TOKEN='';localStorage.removeItem('at');}});
+document.getElementById('pi').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+</script>
+</body></html>`;
+
+// ═══════════════════════════════════════════════
+// §4  Durable Object
 // ═══════════════════════════════════════════════
 
 export class PokerRoom {
@@ -53,10 +213,32 @@ export class PokerRoom {
     this.startVotes       = new Set();
     this.kickVotes        = new Map(); // targetId → Set<voterId>
 
-    // 从持久存储加载玩家数据（筹码 + 欠款）
+    // 可动态修改的配置
+    this.config = {
+      smallBlind:    10,
+      bigBlind:      20,
+      initialChips:  1000,
+      maxSeats:      10,
+      disconnectTtl: 5 * 60 * 1000,
+      showdownDelay: 5000,
+    };
+
+    // 管理员鉴权（token 仅内存保存，重启失效）
+    this.adminPassword  = 'admin888';
+    this.adminToken     = null;
+    this.adminTokenExp  = 0;
+
+    // 从持久存储加载玩家数据（筹码 + 欠款）+ 配置
     this.persistedPlayers = {};
     this.state.blockConcurrencyWhile(async () => {
-      this.persistedPlayers = (await this.state.storage.get('persistedPlayers')) || {};
+      const [pp, cfg, pwd] = await Promise.all([
+        this.state.storage.get('persistedPlayers'),
+        this.state.storage.get('config'),
+        this.state.storage.get('adminPassword'),
+      ]);
+      this.persistedPlayers = pp || {};
+      if (cfg) Object.assign(this.config, cfg);
+      if (pwd) this.adminPassword = pwd;
     });
   }
 
@@ -78,7 +260,153 @@ export class PokerRoom {
         { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       );
     }
+    // ── Admin 路由 ──────────────────────────────
+    const p = url.pathname;
+
+    // 管理页面
+    if (p === '/admin' && request.method === 'GET') {
+      return new Response(ADMIN_HTML, { headers: { 'Content-Type': 'text/html;charset=utf-8' } });
+    }
+
+    // CORS 预检（admin API）
+    if (request.method === 'OPTIONS' && p.startsWith('/admin/')) {
+      return new Response(null, { headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      }});
+    }
+
+    // 登录
+    if (p === '/admin/login' && request.method === 'POST') {
+      const body = await request.json().catch(() => ({}));
+      if (body.password === this.adminPassword) {
+        this.adminToken    = crypto.randomUUID();
+        this.adminTokenExp = Date.now() + 24 * 3600 * 1000;
+        return this._adminJson({ token: this.adminToken });
+      }
+      return this._adminJson({ error: '密码错误' }, 401);
+    }
+
+    // 需鉴权的 admin API
+    if (p.startsWith('/admin/') && p !== '/admin/login') {
+      if (!this._checkAdmin(request)) return this._adminJson({ error: '未授权，请重新登录' }, 401);
+
+      // 房间实时状态
+      if (p === '/admin/state' && request.method === 'GET') {
+        const all = [...this.players, ...this.audience];
+        return this._adminJson({
+          seated:   this.players.length,
+          audience: this.audience.length,
+          pot:      this.gameState.pot,
+          stage:    this.gameState.stage,
+          config:   this.config,
+          players:  all.map(x => ({
+            id: x.id, name: x.name, chips: x.chips, debt: x.debt || 0,
+            role: this.players.includes(x) ? 'player' : 'audience',
+            connected: x.connected, pendingLeave: x.pendingAudience || false,
+          })),
+        });
+      }
+
+      if (request.method === 'POST') {
+        const body = await request.json().catch(() => ({}));
+
+        // 更新配置
+        if (p === '/admin/config') {
+          const allowed = ['smallBlind','bigBlind','initialChips','maxSeats','disconnectTtl','showdownDelay'];
+          for (const k of allowed) {
+            if (body[k] !== undefined && Number.isFinite(+body[k]) && +body[k] > 0) {
+              this.config[k] = +body[k];
+            }
+          }
+          await this.state.storage.put('config', this.config);
+          this._broadcastState();
+          return this._adminJson({ message: '配置已保存' });
+        }
+
+        // 强制将玩家移至观众
+        if (p === '/admin/kick') {
+          const target = this.players.find(x => x.id === body.playerId)
+                      || this.audience.find(x => x.id === body.playerId);
+          if (!target) return this._adminJson({ error: '找不到该用户' }, 404);
+          if (this.players.includes(target)) {
+            this._moveToAudience(body.playerId, `🔨 管理员将 ${target.name} 移至观众席`);
+          }
+          return this._adminJson({ message: `已操作 ${target.name}` });
+        }
+
+        // 调整筹码
+        if (p === '/admin/give-chips') {
+          const target = this.players.find(x => x.id === body.playerId)
+                      || this.audience.find(x => x.id === body.playerId);
+          if (!target) return this._adminJson({ error: '找不到该用户' }, 404);
+          const amt = Math.round(+body.amount || 0);
+          if (amt === 0) return this._adminJson({ error: '金额不能为 0' }, 400);
+          target.chips = Math.max(0, (target.chips || 0) + amt);
+          this._savePlayerData();
+          this._broadcastState();
+          return this._adminJson({ message: `${target.name} 筹码调整 ${amt > 0 ? '+' : ''}${amt}，当前：${target.chips}` });
+        }
+
+        // 清除欠款
+        if (p === '/admin/reset-debt') {
+          const target = this.players.find(x => x.id === body.playerId)
+                      || this.audience.find(x => x.id === body.playerId);
+          if (!target) return this._adminJson({ error: '找不到该用户' }, 404);
+          target.debt = 0;
+          this._savePlayerData();
+          this._broadcastState();
+          return this._adminJson({ message: `${target.name} 欠款已清零` });
+        }
+
+        // 强制解散
+        if (p === '/admin/dissolve') {
+          this._broadcast({ type: 'dissolve', message: '管理员强制解散了房间' });
+          this.players = []; this.audience = [];
+          this.dissolveVotes.clear(); this.kickVotes.clear();
+          this.persistedPlayers = {};
+          await this.state.storage.delete('persistedPlayers').catch(() => {});
+          const gs = this.gameState;
+          gs.stage='waiting'; gs.community=[]; gs.pot=0;
+          gs.currentBet=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
+          return this._adminJson({ message: '房间已解散' });
+        }
+
+        // 修改管理密码
+        if (p === '/admin/change-password') {
+          if (!body.newPassword || body.newPassword.length < 4) {
+            return this._adminJson({ error: '密码至少 4 位' }, 400);
+          }
+          this.adminPassword = body.newPassword;
+          this.adminToken    = null; // 作废旧 token
+          await this.state.storage.put('adminPassword', this.adminPassword);
+          return this._adminJson({ message: '密码已修改，请重新登录' });
+        }
+      }
+
+      return this._adminJson({ error: '未知 admin 路由' }, 404);
+    }
+
     return new Response("Texas Hold'em Durable Object is running", { status: 200 });
+  }
+
+  // 检查 admin Bearer token
+  _checkAdmin(request) {
+    const auth  = request.headers.get('Authorization') || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    return !!(token && token === this.adminToken && Date.now() < this.adminTokenExp);
+  }
+
+  // 返回 JSON 响应（含 CORS）
+  _adminJson(data, status = 200) {
+    return new Response(JSON.stringify(data), {
+      status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   }
 
   _upgradeWebSocket(request) {
@@ -113,12 +441,7 @@ export class PokerRoom {
     return new Response(null, { status: 101, webSocket: client });
   }
 
-  get SMALL_BLIND()    { return 10; }
-  get BIG_BLIND()      { return 20; }
-  get INITIAL_CHIPS()  { return 1000; }
-  get MAX_SEATS()      { return 10; }
-  get DISCONNECT_TTL() { return 5 * 60 * 1000; }
-  get SHOWDOWN_DELAY() { return 5000; }
+  // 配置通过 this.config 访问，支持运行时修改
 
   _createDeck() {
     const SUITS = ['H', 'D', 'C', 'S'];
@@ -309,7 +632,7 @@ export class PokerRoom {
     gs.bigBlindIndex   = (gs.dealerIndex + 2) % this.players.length;
     for (const p of this.players) p.hand = [gs.deck.pop(), gs.deck.pop()];
     const sbP=this.players[gs.smallBlindIndex], bbP=this.players[gs.bigBlindIndex];
-    const sbAmt=Math.min(this.SMALL_BLIND,sbP.chips), bbAmt=Math.min(this.BIG_BLIND,bbP.chips);
+    const sbAmt=Math.min(this.config.smallBlind,sbP.chips), bbAmt=Math.min(this.config.bigBlind,bbP.chips);
     sbP.chips-=sbAmt; sbP.bet=sbAmt; sbP.totalCommitted=sbAmt; if(sbP.chips===0) sbP.allIn=true;
     bbP.chips-=bbAmt; bbP.bet=bbAmt; bbP.totalCommitted=bbAmt; if(bbP.chips===0) bbP.allIn=true;
     gs.pot=sbAmt+bbAmt; gs.currentBet=bbAmt; gs.stage='preflop';
@@ -483,7 +806,7 @@ export class PokerRoom {
       pot: this.gameState.pot,
     });
     this._broadcastState();
-    setTimeout(() => this._endHand(), this.SHOWDOWN_DELAY);
+    setTimeout(() => this._endHand(), this.config.showdownDelay);
   }
 
   _endHand() {
@@ -520,7 +843,7 @@ export class PokerRoom {
     const now=Date.now(), before=this.players.length+this.audience.length;
     const filter = arr => arr.filter(p => {
       if (p.pendingAudience) return true;
-      if(!p.connected&&(now-p.lastSeen)>this.DISCONNECT_TTL){this.clients.delete(p.id);return false;}
+      if(!p.connected&&(now-p.lastSeen)>this.config.disconnectTtl){this.clients.delete(p.id);return false;}
       return true;
     });
     this.players  = filter(this.players);
@@ -583,7 +906,7 @@ export class PokerRoom {
         } else {
           const name = (msg.name||'').trim()||`游客${this.audience.length+1}`;
           const persisted = this.persistedPlayers[playerId];
-          const chips = (persisted && persisted.chips > 0) ? persisted.chips : this.INITIAL_CHIPS;
+          const chips = (persisted && persisted.chips > 0) ? persisted.chips : this.config.initialChips;
           const debt  = persisted ? (persisted.debt || 0) : 0;
           this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
           this._broadcastState();
@@ -602,8 +925,8 @@ export class PokerRoom {
         }
         const inAud = this.audience.find(p => p.id === playerId);
         if (!inAud) return;
-        if (this.players.length >= this.MAX_SEATS) {
-          this._sendTo(playerId,{type:'error',message:`座位已满（最多 ${this.MAX_SEATS} 人）`}); return;
+        if (this.players.length >= this.config.maxSeats) {
+          this._sendTo(playerId,{type:'error',message:`座位已满（最多 ${this.config.maxSeats} 人）`}); return;
         }
         this.audience = this.audience.filter(p => p.id !== playerId);
         this.players.push(inAud);
