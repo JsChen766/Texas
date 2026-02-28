@@ -135,7 +135,7 @@ async function doLogin(){
   else showMsg(document.getElementById('lm'),r.data.error||'登录失败',false);
 }
 function doLogout(){TOKEN='';localStorage.removeItem('at');clearInterval(timer);document.getElementById('ms').style.display='none';document.getElementById('ls').style.display='';}
-function showMain(){document.getElementById('ls').style.display='none';document.getElementById('ms').style.display='';load();timer=setInterval(load,5000);}
+function showMain(){document.getElementById('ls').style.display='none';document.getElementById('ms').style.display='block';load();timer=setInterval(load,5000);}
 var STAGES={waiting:'等待',preflop:'翻牌前',flop:'翻牌',turn:'转牌',river:'河牌',showdown:'摊牌'};
 async function load(){
   var r=await api('/admin/state');
