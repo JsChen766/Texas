@@ -363,12 +363,12 @@ function updateButtons(state) {
       btnStart.textContent = '撤回开始';
       btnStart.classList.add('voted');
     } else {
-      btnStart.textContent = '🎮 开始游戏';
+      btnStart.textContent = '开始游戏/准备';
       btnStart.classList.remove('voted');
     }
   } else {
     btnStart.disabled = true;
-    btnStart.textContent = '🎮 开始游戏';
+    btnStart.textContent = '开始游戏/准备';
     btnStart.classList.remove('voted');
   }
 
