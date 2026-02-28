@@ -583,6 +583,7 @@ export class PokerRoom {
           dissolveVotes: dissolveCount, dissolveTotal: allConnected.length,
           startVotes:    startCount,    startTotal:    seatedConnected.length,
           kickStatus,
+          maxSeats: this.config.maxSeats,
         }));
       } catch(_) {}
     }

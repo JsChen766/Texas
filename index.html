@@ -49,14 +49,6 @@
     }
     #btn-enter:hover { background: #388e3c; }
     #btn-enter:disabled { background: #555; cursor: default; }
-    #room-full-msg {
-      color: #ef9a9a; font-size: .85rem;
-      background: rgba(198,40,40,.2);
-      border: 1px solid #c62828;
-      border-radius: 8px; padding: 6px 18px;
-      display: none;
-    }
-    #room-full-msg.visible { display: block; }
 
     /* 退出按鈕 */
     #btn-exit {
@@ -344,7 +336,6 @@
   <p style="font-size:.8rem;opacity:.75;text-align:center">本网站目前只用于群U娱乐使用，无其他用途</p>
   <p style="font-size:.8rem;opacity:.75;text-align:center">叠甲叠甲叠甲！</p>
   <p style="opacity:.6;font-size:.85rem">请输入你的昵称加入房间</p>
-  <p id="room-full-msg">🚫 房间已满（10/10），无法加入</p>
   <input id="name-input" type="text" maxlength="16" placeholder="你的昵称…" autocomplete="off" />
   <button id="btn-enter">进入房间</button>
 </div>
