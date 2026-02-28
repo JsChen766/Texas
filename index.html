@@ -173,16 +173,29 @@
 
     /* Action buttons ── */
     #action-area { }
-    #action-area h4 { font-size: .8rem; opacity: .6; margin-bottom: 8px; }
+    #action-area h4 { font-size: .8rem; opacity: .6; margin-bottom: 10px; }
     #action-buttons {
-      display: flex; gap: 18px; row-gap: 22px; flex-wrap: wrap; align-items: center;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .action-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .action-row .action-btn {
+      flex: 1;
+      min-width: 100px;
     }
 
     button.action-btn {
-      padding: 10px 22px; border-radius: 8px;
+      padding: 11px 18px; border-radius: 8px;
       border: none; cursor: pointer;
       font-size: .9rem; font-weight: 600;
       transition: transform .1s, opacity .2s;
+      white-space: nowrap;
     }
     button.action-btn:active { transform: scale(.96); }
     button.action-btn:disabled { opacity: .35; cursor: default; }
@@ -202,13 +215,6 @@
       flex-shrink: 0;
     }
     #raise-input.invalid { border-color: #7f0000; }
-
-    /* 加注区：输入框 + 按钮同行 */
-    .raise-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
 
     /* 欠款标签 ─────── */
     .player-debt { font-size: .7rem; color: #ef9a9a; }
@@ -358,18 +364,28 @@
     <!-- 行动按钮 -->
     <div id="action-area">
       <h4>行动</h4>
-      <div id="action-buttons"></div>
-        <button id="btn-start"  class="action-btn">开始游戏/准备</button>
-        <button id="btn-borrow" class="action-btn">借筹码(+1000)</button>
-        <button id="btn-dissolve" class="action-btn">🚪 解散房间</button>
-        <button id="btn-fold"   class="action-btn" disabled>弃牌</button>
-        <button id="btn-check"  class="action-btn" disabled>过牌</button>
-        <button id="btn-call"   class="action-btn" disabled>跟注</button>
-        <div class="raise-group">
+      <div id="action-buttons">
+        <!-- 第一行：开始 / 解散 -->
+        <div class="action-row">
+          <button id="btn-start"   class="action-btn">开始游戏/准备</button>
+          <button id="btn-dissolve" class="action-btn">🚪 解散房间</button>
+        </div>
+        <!-- 第二行：借筹码 / 弃牌 -->
+        <div class="action-row">
+          <button id="btn-borrow" class="action-btn">💳 借筹码(+1000)</button>
+          <button id="btn-fold"   class="action-btn" disabled>弃牌</button>
+        </div>
+        <!-- 第三行：过牌 / 跟注 -->
+        <div class="action-row">
+          <button id="btn-check"  class="action-btn" disabled>过牌</button>
+          <button id="btn-call"   class="action-btn" disabled>跟注</button>
+        </div>
+        <!-- 第四行：加注输入 / 加注 / All In -->
+        <div class="action-row">
           <input  id="raise-input" type="number" min="5" step="5" placeholder="加注金额" disabled />
           <button id="btn-raise"  class="action-btn" disabled>加注</button>
+          <button id="btn-allin"  class="action-btn" disabled>All In !!</button>
         </div>
-        <button id="btn-allin"  class="action-btn" disabled>All In !!</button>
       </div>
     </div>
 
