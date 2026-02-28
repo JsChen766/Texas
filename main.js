@@ -510,8 +510,30 @@ function appendLog(text, cls = '') {
 // §9  用户交互
 // ═══════════════════════════════════════════════
 
+/* 登录前检查房间人数 */
+const WORKER_HTTP_URL = WORKER_WS_URL.replace('wss://', 'https://').replace('ws://', 'http://');
+const roomFullMsg = document.getElementById('room-full-msg');
+
+async function checkRoomFull() {
+  try {
+    const res = await fetch(`${WORKER_HTTP_URL}/status`);
+    const data = await res.json();
+    if (data.players >= 8) {
+      roomFullMsg.textContent = `🚫 房间已满（${data.players}/8），无法加入`;
+      roomFullMsg.classList.add('visible');
+      nameInput.disabled = true;
+      btnEnter.disabled = true;
+    }
+  } catch (e) {
+    // 网络异常时不阻止进入，保持默认可交互状态
+  }
+}
+
+checkRoomFull();
+
 /* 登录 */
 function doEnter() {
+  if (btnEnter.disabled) return;
   const name = nameInput.value.trim();
   if (!name) { nameInput.focus(); return; }
   playerName = name;
