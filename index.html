@@ -104,8 +104,25 @@
       background: rgba(0,0,0,.45);
       border-radius: 12px; padding: 12px;
       border: 1px solid #2e5e2e;
+      display: flex; flex-direction: column;
+      max-height: calc(100vh - 130px);
     }
     #player-panel h3 { margin-bottom: 8px; font-size: .9rem; opacity: .7; }
+    #player-list {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden; min-height: 0; gap: 0;
+    }
+    #seated-list {
+      flex: 7; overflow-y: auto; min-height: 0;
+      scrollbar-width: thin; scrollbar-color: #2e5e2e transparent;
+    }
+    #audience-list {
+      flex: 3; overflow-y: auto; min-height: 0;
+      scrollbar-width: thin; scrollbar-color: #2e5e2e transparent;
+      border-top: 1px solid rgba(255,255,255,.08); margin-top: 4px; padding-top: 2px;
+    }
+    #seated-list::-webkit-scrollbar, #audience-list::-webkit-scrollbar { width: 4px; }
+    #seated-list::-webkit-scrollbar-thumb, #audience-list::-webkit-scrollbar-thumb { background: #2e5e2e; border-radius: 2px; }
 
     .player-row {
       display: flex; align-items: center; gap: 6px;
@@ -146,7 +163,11 @@
       border-radius: 12px; padding: 16px;
       border: 1px solid #2e5e2e;
       display: flex; flex-direction: column; gap: 12px;
+      max-height: calc(100vh - 130px); overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: #2e5e2e transparent;
     }
+    #game-area::-webkit-scrollbar { width: 4px; }
+    #game-area::-webkit-scrollbar-thumb { background: #2e5e2e; border-radius: 2px; }
 
     /* Stage + Pot ──── */
     #info-bar {
@@ -293,8 +314,8 @@
     /* Responsive ────── */
     @media (max-width: 640px) {
       #game-wrap { grid-template-columns: 1fr; }
-      #player-panel { order: 2; }
-      #game-area    { order: 1; }
+      #player-panel { order: 2; max-height: 45vh; }
+      #game-area    { order: 1; max-height: none; overflow-y: visible; }
     }
   </style>
 </head>
@@ -336,7 +357,10 @@
       <h3 style="margin-bottom:0;font-size:.9rem;opacity:.7">玩家列表</h3>
       <button id="btn-seat-toggle" style="background:#2e7d32;color:#fff;">🪑 上座</button>
     </div>
-    <div id="player-list"><!-- JS 填充 --></div>
+    <div id="player-list">
+      <div id="seated-list"></div>
+      <div id="audience-list"></div>
+    </div>
   </div>
 
   <!-- 右侧游戏区域 -->
