@@ -425,8 +425,17 @@ function updateButtons(state) {
   btnRaise.disabled  = !canAct;
   raiseInput.disabled = !canAct;
   if (canAct) {
-    raiseInput.min   = state.currentBet * 2;
-    raiseInput.value = raiseInput.value || state.currentBet * 2;
+    const minRaise = state.currentBet * 2;
+    // 对齐到 5 的整数倍
+    const minAligned = Math.ceil(minRaise / 5) * 5 || 5;
+    raiseInput.min   = minAligned;
+    raiseInput.step  = 5;
+    if (!raiseInput.value || Number(raiseInput.value) < minAligned) {
+      raiseInput.value = minAligned;
+    }
+    _validateRaise();
+  } else {
+    raiseInput.classList.remove('invalid');
   }
 }
 
@@ -517,13 +526,22 @@ btnCall.addEventListener('click', () => {
   send({ type: 'action', action: 'call' });
 });
 
+/* 加注输入实时校验：必须是 > 0 且为 5 的整数倍 */
+function _validateRaise() {
+  const v = parseInt(raiseInput.value, 10);
+  const min = parseInt(raiseInput.min, 10) || 5;
+  const valid = !isNaN(v) && v > 0 && v % 5 === 0 && v >= min;
+  raiseInput.classList.toggle('invalid', !valid);
+  btnRaise.disabled = !valid;
+}
+
+raiseInput.addEventListener('input', _validateRaise);
+
 /* 加注 */
 btnRaise.addEventListener('click', () => {
   const amount = parseInt(raiseInput.value, 10);
-  if (!amount || amount <= 0) {
-    appendLog('⚠ 请输入有效的加注金额', 'error');
-    return;
-  }
+  const min = parseInt(raiseInput.min, 10) || 5;
+  if (isNaN(amount) || amount <= 0 || amount % 5 !== 0 || amount < min) return;
   send({ type: 'action', action: 'raise', amount });
 });
 

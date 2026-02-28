@@ -166,11 +166,11 @@
     #action-area { }
     #action-area h4 { font-size: .8rem; opacity: .6; margin-bottom: 8px; }
     #action-buttons {
-      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+      display: flex; gap: 10px; row-gap: 14px; flex-wrap: wrap; align-items: center;
     }
 
     button.action-btn {
-      padding: 8px 18px; border-radius: 8px;
+      padding: 10px 22px; border-radius: 8px;
       border: none; cursor: pointer;
       font-size: .9rem; font-weight: 600;
       transition: transform .1s, opacity .2s;
@@ -186,12 +186,13 @@
     #btn-allin  { background: #4a148c; color: #fff; }
 
     #raise-input {
-      width: 90px; padding: 7px 10px;
+      width: 130px; padding: 7px 10px;
       border-radius: 8px; border: 2px solid #e65100;
       background: #1a1a1a; color: #fff;
       font-size: .9rem; outline: none;
       flex-shrink: 0;
     }
+    #raise-input.invalid { border-color: #7f0000; }
 
     /* 加注区：输入框 + 按钮同行 */
     .raise-group {
@@ -352,7 +353,7 @@
         <button id="btn-check"  class="action-btn" disabled>过牌</button>
         <button id="btn-call"   class="action-btn" disabled>跟注</button>
         <div class="raise-group">
-          <input  id="raise-input" type="number" min="1" placeholder="加注金额" disabled />
+          <input  id="raise-input" type="number" min="5" step="5" placeholder="加注金额" disabled />
           <button id="btn-raise"  class="action-btn" disabled>加注</button>
         </div>
         <button id="btn-allin"  class="action-btn" disabled>All In !!</button>
