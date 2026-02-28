@@ -77,19 +77,35 @@
     .audience-row { opacity: .6; }
     .audience-avatar { background: #455a64 !important; }
 
-    /* 踢人投票条 */
-    #kick-vote-bar {
-      display: none;
-      background: rgba(230,81,0,.18);
-      border: 1px solid #e65100;
+    /* 投票/提示条：固定占位，visible 时显示 */
+    #dissolve-bar,
+    #kick-vote-bar,
+    #start-vote-bar {
+      min-height: 34px;
       border-radius: 8px;
       padding: 6px 12px;
       font-size: .8rem;
-      color: #ffcc80;
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
       margin-bottom: 4px;
     }
-    #kick-vote-bar.visible { display: block; }
+    #dissolve-bar.visible,
+    #kick-vote-bar.visible,
+    #start-vote-bar.visible {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* 踢人投票条 */
+    #kick-vote-bar {
+      background: rgba(230,81,0,.18);
+      border: 1px solid #e65100;
+      color: #ffcc80;
+    }
 
     /* ── Connection status ─────────────────────── */
     #conn-status {
@@ -267,16 +283,10 @@
 
     /* 解散状态提示 ─── */
     #dissolve-bar {
-      display: none;
       background: rgba(198,40,40,.18);
       border: 1px solid #c62828;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: .8rem;
       color: #ef9a9a;
-      text-align: center;
     }
-    #dissolve-bar.visible { display: block; }
 
     #btn-borrow  { background: #0277bd; color: #fff; }
     #btn-dissolve { background: #6d4c41; color: #fff; }
@@ -285,16 +295,10 @@
 
     /* 开始投票条 */
     #start-vote-bar {
-      display: none;
       background: rgba(46,125,50,.2);
       border: 1px solid #2e7d32;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: .8rem;
       color: #a5d6a7;
-      text-align: center;
     }
-    #start-vote-bar.visible { display: block; }
 
     /* Showdown overlay ─ */
     #showdown-overlay {
@@ -418,11 +422,11 @@
         <!-- 行　零：上座 / 让座 -->
         <div class="action-row">
           <button id="btn-take-seat" class="action-btn">🪑 上座</button>
-          <button id="btn-give-seat" class="action-btn" style="display:none">🚶 让座</button>
+          <button id="btn-start"   class="action-btn">开始游戏/准备</button>
         </div>
         <!-- 第一行：开始 / 解散 -->
         <div class="action-row">
-          <button id="btn-start"   class="action-btn">开始游戏/准备</button>
+          <button id="btn-give-seat" class="action-btn" style="display:none">🚶 让座</button>
           <button id="btn-dissolve" class="action-btn">🚪 解散房间</button>
         </div>
         <!-- 第二行：借🍓 / 弃牌 -->
