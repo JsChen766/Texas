@@ -58,6 +58,47 @@
     }
     #room-full-msg.visible { display: block; }
 
+    /* 退出按鈕 */
+    #btn-exit {
+      position: fixed; top: 12px; right: 16px;
+      padding: 6px 14px; border-radius: 8px;
+      background: #37474f; border: 1px solid #546e7a;
+      color: #cfd8dc; font-size: .8rem; cursor: pointer;
+      z-index: 100;
+    }
+    #btn-exit:hover { background: #c62828; border-color: #e57373; color: #fff; }
+    #btn-exit { display: none; }
+    body.in-room #btn-exit { display: block; }
+
+    /* 上座 / 让座 按鈕 */
+    #btn-take-seat { background: #2e7d32; color: #fff; }
+    #btn-take-seat:hover { background: #388e3c; }
+    #btn-give-seat { background: #e65100; color: #fff; }
+    #btn-give-seat:hover { background: #bf360c; }
+
+    /* 观众行样式 */
+    .audience-section-header {
+      font-size: .75rem; color: #90a4ae;
+      margin: 8px 0 4px; padding: 2px 0;
+      border-top: 1px solid #263238;
+    }
+    .audience-row { opacity: .6; }
+    .audience-avatar { background: #455a64 !important; }
+
+    /* 踢人投票条 */
+    #kick-vote-bar {
+      display: none;
+      background: rgba(230,81,0,.18);
+      border: 1px solid #e65100;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .8rem;
+      color: #ffcc80;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    #kick-vote-bar.visible { display: block; }
+
     /* ── Connection status ─────────────────────── */
     #conn-status {
       padding: 4px 14px; border-radius: 20px;
@@ -358,6 +399,8 @@
 
     <!-- 解散提示条 -->
     <div id="dissolve-bar">解散投票进行中：<span id="dissolve-count">0</span>/<span id="dissolve-total">0</span> 人同意</div>
+    <!-- 踢人投票条 -->
+    <div id="kick-vote-bar"></div>
     <!-- 开始投票条 -->
     <div id="start-vote-bar">开始投票进行中：<span id="start-count">0</span>/<span id="start-total">0</span> 人准备好</div>
 
@@ -365,6 +408,11 @@
     <div id="action-area">
       <h4>行动</h4>
       <div id="action-buttons">
+        <!-- 行　零：上座 / 让座 -->
+        <div class="action-row">
+          <button id="btn-take-seat" class="action-btn">🪑 上座</button>
+          <button id="btn-give-seat" class="action-btn" style="display:none">🚶 让座</button>
+        </div>
         <!-- 第一行：开始 / 解散 -->
         <div class="action-row">
           <button id="btn-start"   class="action-btn">开始游戏/准备</button>

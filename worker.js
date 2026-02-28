@@ -31,8 +31,9 @@ export default {
 export class PokerRoom {
   constructor(state, env) {
     this.state = state;
-    this.clients = new Map();
-    this.players = [];
+    this.clients  = new Map();
+    this.players  = [];   // 已上座的玩家（参与游戏）
+    this.audience = [];   // 观众（旁观、等待上座）
     this.gameState = {
       deck:               [],
       community:          [],
@@ -50,6 +51,7 @@ export class PokerRoom {
     this.cleanupScheduled = false;
     this.dissolveVotes    = new Set();
     this.startVotes       = new Set();
+    this.kickVotes        = new Map(); // targetId → Set<voterId>
 
     // 从持久存储加载玩家数据（筹码 + 欠款）
     this.persistedPlayers = {};
@@ -66,11 +68,12 @@ export class PokerRoom {
     if (url.pathname === '/status') {
       return new Response(
         JSON.stringify({
-          status:    'ok',
-          players:   this.players.length,
-          connected: this.players.filter(p => p.connected).length,
-          stage:     this.gameState.stage,
-          pot:       this.gameState.pot,
+          status:   'ok',
+          seated:   this.players.length,
+          audience: this.audience.length,
+          total:    this.players.length + this.audience.length,
+          stage:    this.gameState.stage,
+          pot:      this.gameState.pot,
         }),
         { headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
       );
@@ -92,7 +95,8 @@ export class PokerRoom {
     server.addEventListener('close', () => {
       this._enqueue(() => {
         this.clients.delete(playerId);
-        const player = this.players.find(p => p.id === playerId);
+        const player = this.players.find(p => p.id === playerId)
+                    || this.audience.find(p => p.id === playerId);
         if (player) {
           player.connected = false;
           player.lastSeen  = Date.now();
@@ -112,7 +116,7 @@ export class PokerRoom {
   get SMALL_BLIND()    { return 10; }
   get BIG_BLIND()      { return 20; }
   get INITIAL_CHIPS()  { return 1000; }
-  get MAX_PLAYERS()    { return 8; }
+  get MAX_SEATS()      { return 8; }
   get DISCONNECT_TTL() { return 5 * 60 * 1000; }
   get SHOWDOWN_DELAY() { return 5000; }
 
@@ -202,32 +206,60 @@ export class PokerRoom {
 
   _broadcastState() {
     const gs = this.gameState;
-    const connectedIds   = new Set(this.players.filter(p => p.connected).map(p => p.id));
-    const connectedTotal = connectedIds.size;
-    const dissolveCount  = [...this.dissolveVotes].filter(id => connectedIds.has(id)).length;
-    const startCount     = [...this.startVotes].filter(id => connectedIds.has(id)).length;
-    const pub = this.players.map((p, i) => ({
-      id: p.id, name: p.name, chips: p.chips, bet: p.bet,
-      folded: p.folded, allIn: p.allIn, connected: p.connected,
-      isDealer: i===gs.dealerIndex, isSB: i===gs.smallBlindIndex,
-      isBB: i===gs.bigBlindIndex, handCount: p.hand?p.hand.length:0,
-      debt: p.debt || 0,
-      votedDissolve: this.dissolveVotes.has(p.id),
-      votedStart:    this.startVotes.has(p.id),
-    }));
-    for (const player of this.players) {
-      const ws = this.clients.get(player.id);
+    const allUsers        = [...this.players, ...this.audience];
+    const seatedConnected = this.players.filter(p => p.connected);
+    const allConnected    = allUsers.filter(p => p.connected);
+    const dissolveCount   = [...this.dissolveVotes].filter(id => allConnected.find(p=>p.id===id)).length;
+    const startCount      = [...this.startVotes].filter(id => seatedConnected.find(p=>p.id===id)).length;
+
+    // 踢人投票状态
+    const kickStatus = [];
+    for (const [targetId, voters] of this.kickVotes.entries()) {
+      const target = allUsers.find(p => p.id === targetId);
+      if (!target) continue;
+      const count = [...voters].filter(id => seatedConnected.find(p=>p.id===id)).length;
+      kickStatus.push({ targetId, targetName: target.name, count, needed: Math.floor(seatedConnected.length / 2) });
+    }
+
+    const currentPlayerId = gs.currentPlayerIndex >= 0 && this.players[gs.currentPlayerIndex]
+      ? this.players[gs.currentPlayerIndex].id : null;
+
+    // 公开信息：玩家+观众
+    const pub = allUsers.map(p => {
+      const pIdx    = this.players.indexOf(p);
+      const isSeated = pIdx !== -1;
+      return {
+        id: p.id, name: p.name, chips: p.chips, bet: p.bet || 0,
+        folded: p.folded || false, allIn: p.allIn || false, connected: p.connected,
+        isDealer: isSeated && pIdx === gs.dealerIndex,
+        isSB:     isSeated && pIdx === gs.smallBlindIndex,
+        isBB:     isSeated && pIdx === gs.bigBlindIndex,
+        handCount: p.hand ? p.hand.length : 0,
+        debt: p.debt || 0,
+        role: isSeated ? 'player' : 'audience',
+        votedDissolve: this.dissolveVotes.has(p.id),
+        votedStart:    this.startVotes.has(p.id),
+        pendingLeave:  p.pendingAudience || false,
+      };
+    });
+
+    // 分别发送（玩家有手牌，观众没有）
+    for (const person of allUsers) {
+      const ws = this.clients.get(person.id);
       if (!ws) continue;
+      const isSeated = this.players.includes(person);
       try {
         ws.send(JSON.stringify({
           type: 'state', players: pub, community: gs.community,
           pot: gs.pot, stage: gs.stage,
-          currentPlayerIndex: gs.currentPlayerIndex, currentBet: gs.currentBet,
-          dealerIndex: gs.dealerIndex, smallBlindIndex: gs.smallBlindIndex,
-          bigBlindIndex: gs.bigBlindIndex,
-          selfHand: player.hand || [], selfId: player.id,
-          dissolveVotes: dissolveCount, dissolveTotal: connectedTotal,
-          startVotes: startCount, startTotal: connectedTotal,
+          currentPlayerId,
+          currentBet: gs.currentBet,
+          selfHand: isSeated ? (person.hand || []) : [],
+          selfId:   person.id,
+          selfRole: isSeated ? 'player' : 'audience',
+          dissolveVotes: dissolveCount, dissolveTotal: allConnected.length,
+          startVotes:    startCount,    startTotal:    seatedConnected.length,
+          kickStatus,
         }));
       } catch(_) {}
     }
@@ -248,6 +280,15 @@ export class PokerRoom {
   }
 
   _startGame() {
+    // 先处理 pendingAudience 玩家
+    const remaining = [], toAudience = [];
+    for (const p of this.players) {
+      if (p.pendingAudience) { p.pendingAudience = false; toAudience.push(p); }
+      else remaining.push(p);
+    }
+    this.players = remaining;
+    for (const p of toAudience) this.audience.push(p);
+
     const connectable = this.players.filter(p => p.connected && p.chips > 0);
     if (connectable.length < 2) {
       this._broadcast({ type: 'error', message: '至少需要 2 名有筹码且在线的玩家' }); return;
@@ -257,6 +298,7 @@ export class PokerRoom {
     }
     this.dissolveVotes.clear();
     this.startVotes.clear();
+    this.kickVotes.clear();
     this.players = this.players.filter(p => p.chips > 0 || p.connected);
     for (const p of this.players) { p.folded=false; p.allIn=false; p.bet=0; p.hand=[]; p.totalCommitted=0; }
     const gs = this.gameState;
@@ -445,6 +487,16 @@ export class PokerRoom {
   }
 
   _endHand() {
+    // 将 pendingAudience 玩家移至观众席
+    const remaining2 = [];
+    for (const p of this.players) {
+      if (p.pendingAudience) {
+        p.pendingAudience = false;
+        p.folded = false; p.allIn = false; p.bet = 0; p.hand = [];
+        this.audience.push(p);
+      } else { remaining2.push(p); }
+    }
+    this.players = remaining2;
     this.players=this.players.filter(p=>p.chips>0||p.connected);
     const gs=this.gameState;
     gs.stage='waiting'; gs.community=[]; gs.pot=0;
@@ -457,60 +509,133 @@ export class PokerRoom {
 
   /** 将所有玩家的筹码和欠款写入持久存储 */
   _savePlayerData() {
-    for (const p of this.players) {
+    const all = [...this.players, ...this.audience];
+    for (const p of all) {
       this.persistedPlayers[p.id] = { chips: p.chips, debt: p.debt || 0, name: p.name };
     }
     this.state.storage.put('persistedPlayers', this.persistedPlayers).catch(() => {});
   }
 
   _cleanupStale() {
-    const now=Date.now(), before=this.players.length;
-    this.players=this.players.filter(p=>{
+    const now=Date.now(), before=this.players.length+this.audience.length;
+    const filter = arr => arr.filter(p => {
+      if (p.pendingAudience) return true;
       if(!p.connected&&(now-p.lastSeen)>this.DISCONNECT_TTL){this.clients.delete(p.id);return false;}
       return true;
     });
-    if(this.players.length<before) this._broadcastState();
+    this.players  = filter(this.players);
+    this.audience = filter(this.audience);
+    if(this.players.length+this.audience.length<before) this._broadcastState();
   }
 
   _enqueue(fn) {
     this.operationQueue=this.operationQueue.then(()=>{try{fn();}catch(e){console.error('操作错误:',e);}});
   }
 
+  // ─── 将玩家移至观众席（共用逻辑）──────────
+  _moveToAudience(targetId, reason) {
+    const targetIdx = this.players.findIndex(p => p.id === targetId);
+    if (targetIdx === -1) return;
+    const target = this.players[targetIdx];
+    if (this.gameState.stage !== 'waiting') {
+      if (!target.folded && !target.allIn) {
+        target.folded = true;
+        this.gameState.actedSet.add(targetId);
+      }
+      target.pendingAudience = true;
+      this._broadcast({ type:'message', message:`${reason}（本局结束后生效）` });
+      if (targetIdx === this.gameState.currentPlayerIndex) {
+        this._advanceTurn();
+      } else {
+        this._broadcastState();
+      }
+    } else {
+      this.players.splice(targetIdx, 1);
+      target.bet = 0; target.folded = false; target.allIn = false; target.hand = [];
+      this.audience.push(target);
+      this.startVotes.delete(targetId);
+      this.dissolveVotes.delete(targetId);
+      this.kickVotes.delete(targetId);
+      this._broadcastState();
+      this._broadcast({ type:'message', message:reason });
+    }
+  }
+
   _handleMessage(playerId, raw) {
     let msg;
     try{msg=JSON.parse(raw);}catch(_){this._sendTo(playerId,{type:'error',message:'消息格式错误（需要 JSON）'});return;}
     switch(msg.type){
+
+      // ── 加入房间（统一为观众入场）
       case 'join': {
-        const existing=this.players.find(p=>p.id===playerId);
-        if(existing){
-          existing.connected=true; existing.lastSeen=Date.now();
-          if(msg.name) existing.name=msg.name;
-          this._broadcastState(); this._broadcast({type:'message',message:`${existing.name} 重新连线`});
+        const inPlayers  = this.players.find(p => p.id === playerId);
+        const inAudience = this.audience.find(p => p.id === playerId);
+        if (inPlayers) {
+          inPlayers.connected = true; inPlayers.lastSeen = Date.now();
+          if (msg.name) inPlayers.name = msg.name;
+          this._broadcastState();
+          this._broadcast({ type:'message', message:`${inPlayers.name} 重新连线（玩家）` });
+        } else if (inAudience) {
+          inAudience.connected = true; inAudience.lastSeen = Date.now();
+          if (msg.name) inAudience.name = msg.name;
+          this._broadcastState();
+          this._broadcast({ type:'message', message:`${inAudience.name} 重新连线（观众）` });
         } else {
-          if(this.players.length>=this.MAX_PLAYERS){this._sendTo(playerId,{type:'error',message:'房间已满（最多 8 人）'});return;}
-          const name=(msg.name||'').trim()||`玩家${this.players.length+1}`;
-          // 从持久化存储恢复筹码和欠款
+          const name = (msg.name||'').trim()||`游客${this.audience.length+1}`;
           const persisted = this.persistedPlayers[playerId];
           const chips = (persisted && persisted.chips > 0) ? persisted.chips : this.INITIAL_CHIPS;
           const debt  = persisted ? (persisted.debt || 0) : 0;
-          this.players.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
-          // 新玩家加入导致人数变化，清空开始投票，需重新发起
-          if (this.startVotes.size > 0) {
-            this.startVotes.clear();
-            this._broadcast({type:'message',message:`有新玩家加入，开始投票已重置`});
-          }
-          this._broadcastState(); this._broadcast({type:'message',message:`${name} 加入房间（筹码 ${chips}${debt>0?' · 欠款 '+debt:''}）`});
+          this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
+          this._broadcastState();
+          this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（筹码 ${chips}${debt>0?' · 欠款 '+debt:''}）` });
         }
         break;
       }
+
+      // ── 上座
+      case 'take_seat': {
+        if (this.players.find(p => p.id === playerId)) {
+          this._sendTo(playerId,{type:'error',message:'你已经在座位上了'}); return;
+        }
+        if (this.gameState.stage !== 'waiting') {
+          this._sendTo(playerId,{type:'error',message:'游戏进行中，请等待本局结束后上座'}); return;
+        }
+        const inAud = this.audience.find(p => p.id === playerId);
+        if (!inAud) return;
+        if (this.players.length >= this.MAX_SEATS) {
+          this._sendTo(playerId,{type:'error',message:`座位已满（最多 ${this.MAX_SEATS} 人）`}); return;
+        }
+        this.audience = this.audience.filter(p => p.id !== playerId);
+        this.players.push(inAud);
+        if (this.startVotes.size > 0) {
+          this.startVotes.clear();
+          this._broadcast({type:'message',message:'有玩家上座，开始投票已重置'});
+        }
+        this._broadcastState();
+        this._broadcast({type:'message',message:`🪑 ${inAud.name} 上座加入游戏！`});
+        break;
+      }
+
+      // ── 让座
+      case 'give_seat': {
+        const pIdx = this.players.findIndex(p => p.id === playerId);
+        if (pIdx === -1) { this._sendTo(playerId,{type:'error',message:'你不在座位上'}); return; }
+        const pName = this.players[pIdx].name;
+        this.startVotes.delete(playerId);
+        this.dissolveVotes.delete(playerId);
+        this.kickVotes.delete(playerId);
+        this._moveToAudience(playerId, `🚶 ${pName} 主动让座`);
+        break;
+      }
+
+      // ── 开始游戏投票
       case 'start_game': {
         if (this.gameState.stage !== 'waiting') {
           this._sendTo(playerId,{type:'error',message:'游戏已在进行中'}); break;
         }
         const startPlayer = this.players.find(p => p.id === playerId);
-        if (!startPlayer) break;
+        if (!startPlayer) { this._sendTo(playerId,{type:'error',message:'只有玩家才能发起开始投票'}); break; }
         if (this.startVotes.has(playerId)) {
-          // 再次点击 = 撤回开始投票
           this.startVotes.delete(playerId);
           this._broadcastState();
           this._broadcast({type:'message',message:`${startPlayer.name} 撤回了开始投票`});
@@ -524,47 +649,79 @@ export class PokerRoom {
         }
         break;
       }
+
       case 'action': this._handleAction(playerId,msg.action,msg.amount); break;
 
+      // ── 借筹码
       case 'borrow': {
         if (this.gameState.stage !== 'waiting') {
           this._sendTo(playerId,{type:'error',message:'只能在等待阶段借筹码'}); return;
         }
-        const player = this.players.find(p => p.id === playerId);
-        if (!player) return;
-        const BORROW_AMOUNT = 1000;
-        player.chips += BORROW_AMOUNT;
-        player.debt   = (player.debt || 0) + BORROW_AMOUNT;
-        this._savePlayerData();
-        this._broadcastState();
-        this._broadcast({type:'message',message:`💳 ${player.name} 向银行借了 ${BORROW_AMOUNT} 筹码（累计欠款 ${player.debt}）`});
+        const person = this.players.find(p=>p.id===playerId)||this.audience.find(p=>p.id===playerId);
+        if (!person) return;
+        person.chips += 1000; person.debt = (person.debt||0) + 1000;
+        this._savePlayerData(); this._broadcastState();
+        this._broadcast({type:'message',message:`💳 ${person.name} 向银行借了 1000 筹码（累计欠款 ${person.debt}）`});
         break;
       }
 
+      // ── 解散投票（半数通过）
       case 'dissolve_vote': {
-        const player = this.players.find(p => p.id === playerId);
-        if (!player) return;
+        const person = this.players.find(p=>p.id===playerId)||this.audience.find(p=>p.id===playerId);
+        if (!person) return;
         if (this.dissolveVotes.has(playerId)) {
-          // 再次点击 = 撤回投票
           this.dissolveVotes.delete(playerId);
           this._broadcastState();
-          this._broadcast({type:'message',message:`${player.name} 撤回了解散投票`});
+          this._broadcast({type:'message',message:`${person.name} 撤回了解散投票`});
         } else {
           this.dissolveVotes.add(playerId);
-          const connectedPlayers = this.players.filter(p => p.connected);
-          const allVoted = connectedPlayers.length > 0 && connectedPlayers.every(p => this.dissolveVotes.has(p.id));
+          const allConnected = [...this.players,...this.audience].filter(p=>p.connected);
+          const needed = Math.floor(allConnected.length / 2);
+          const count  = [...this.dissolveVotes].filter(id=>allConnected.find(p=>p.id===id)).length;
           this._broadcastState();
-          this._broadcast({type:'message',message:`${player.name} 投票解散（${this.dissolveVotes.size}/${connectedPlayers.length}）`});
-          if (allVoted) {
-            this._broadcast({type:'dissolve',message:'所有人同意，房间已解散！'});
-            // 清空房间并重置持久化数据
-            this.players = [];
-            this.dissolveVotes.clear();
-            this.persistedPlayers = {};
-            this.state.storage.delete('persistedPlayers').catch(() => {});
-            const gs = this.gameState;
+          this._broadcast({type:'message',message:`${person.name} 投票解散（${count}/${allConnected.length}，需要 ${needed}）`});
+          if (needed > 0 && count >= needed) {
+            this._broadcast({type:'dissolve',message:'超过半数同意，房间已解散！'});
+            this.players=[]; this.audience=[];
+            this.dissolveVotes.clear(); this.kickVotes.clear();
+            this.persistedPlayers={};
+            this.state.storage.delete('persistedPlayers').catch(()=>{});
+            const gs=this.gameState;
             gs.stage='waiting'; gs.community=[]; gs.pot=0;
             gs.currentBet=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
+          }
+        }
+        break;
+      }
+
+      // ── 踢人投票
+      case 'kick_vote': {
+        const voter = this.players.find(p=>p.id===playerId);
+        if (!voter) { this._sendTo(playerId,{type:'error',message:'只有玩家才能踢人'}); return; }
+        const targetId = msg.targetId;
+        if (!targetId || targetId === playerId) {
+          this._sendTo(playerId,{type:'error',message:'无效的踢出目标'}); return;
+        }
+        const target = this.players.find(p=>p.id===targetId);
+        if (!target) { this._sendTo(playerId,{type:'error',message:'目标不在座位上'}); return; }
+
+        if (!this.kickVotes.has(targetId)) this.kickVotes.set(targetId,new Set());
+        const votes = this.kickVotes.get(targetId);
+        const seatedConnected = this.players.filter(p=>p.connected);
+        const needed = Math.floor(seatedConnected.length / 2);
+
+        if (votes.has(playerId)) {
+          votes.delete(playerId);
+          this._broadcastState();
+          this._broadcast({type:'message',message:`${voter.name} 撤回了对 ${target.name} 的踢出投票`});
+        } else {
+          votes.add(playerId);
+          const count = [...votes].filter(id=>seatedConnected.find(p=>p.id===id)).length;
+          this._broadcastState();
+          this._broadcast({type:'message',message:`${voter.name} 投票踢出 ${target.name}（${count}/${seatedConnected.length}，需要 ${needed}）`});
+          if (needed > 0 && count >= needed) {
+            this.kickVotes.delete(targetId);
+            this._moveToAudience(targetId, `🦶 ${target.name} 被投票移至观众席`);
           }
         }
         break;
