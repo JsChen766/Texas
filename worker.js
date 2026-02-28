@@ -258,7 +258,7 @@ export class PokerRoom {
     this.dissolveVotes.clear();
     this.startVotes.clear();
     this.players = this.players.filter(p => p.chips > 0 || p.connected);
-    for (const p of this.players) { p.folded=false; p.allIn=false; p.bet=0; p.hand=[]; }
+    for (const p of this.players) { p.folded=false; p.allIn=false; p.bet=0; p.hand=[]; p.totalCommitted=0; }
     const gs = this.gameState;
     gs.deck=this._shuffleDeck(this._createDeck()); gs.community=[];
     gs.pot=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
@@ -268,8 +268,8 @@ export class PokerRoom {
     for (const p of this.players) p.hand = [gs.deck.pop(), gs.deck.pop()];
     const sbP=this.players[gs.smallBlindIndex], bbP=this.players[gs.bigBlindIndex];
     const sbAmt=Math.min(this.SMALL_BLIND,sbP.chips), bbAmt=Math.min(this.BIG_BLIND,bbP.chips);
-    sbP.chips-=sbAmt; sbP.bet=sbAmt; if(sbP.chips===0) sbP.allIn=true;
-    bbP.chips-=bbAmt; bbP.bet=bbAmt; if(bbP.chips===0) bbP.allIn=true;
+    sbP.chips-=sbAmt; sbP.bet=sbAmt; sbP.totalCommitted=sbAmt; if(sbP.chips===0) sbP.allIn=true;
+    bbP.chips-=bbAmt; bbP.bet=bbAmt; bbP.totalCommitted=bbAmt; if(bbP.chips===0) bbP.allIn=true;
     gs.pot=sbAmt+bbAmt; gs.currentBet=bbAmt; gs.stage='preflop';
     gs.currentPlayerIndex=this._nextActionableIndex((gs.bigBlindIndex+1)%this.players.length);
     this._broadcastState();
@@ -300,6 +300,7 @@ export class PokerRoom {
       case 'call': {
         const need=Math.min(gs.currentBet-player.bet,player.chips);
         player.chips-=need; player.bet+=need; gs.pot+=need;
+        player.totalCommitted=(player.totalCommitted||0)+need;
         if(player.chips===0) player.allIn=true;
         gs.actedSet.add(playerId); this._broadcast({type:'message',message:`${player.name} 跟注 ${need}`}); break;
       }
@@ -309,12 +310,14 @@ export class PokerRoom {
         const totalBet=Math.min(amount,player.chips+player.bet), addChips=totalBet-player.bet;
         if(addChips>player.chips){this._sendTo(playerId,{type:'error',message:'筹码不足'});return;}
         player.chips-=addChips; gs.pot+=addChips; player.bet=totalBet; gs.currentBet=totalBet;
+        player.totalCommitted=(player.totalCommitted||0)+addChips;
         if(player.chips===0) player.allIn=true;
         gs.actedSet=new Set([playerId]); gs.lastRaiserIndex=idx;
         this._broadcast({type:'message',message:`${player.name} 加注至 ${totalBet}`}); break;
       }
       case 'allin': {
         const allInAmt=player.chips; player.bet+=allInAmt; gs.pot+=allInAmt;
+        player.totalCommitted=(player.totalCommitted||0)+allInAmt;
         if(player.bet>gs.currentBet){gs.currentBet=player.bet;gs.actedSet=new Set([playerId]);gs.lastRaiserIndex=idx;}
         else gs.actedSet.add(playerId);
         player.chips=0; player.allIn=true;
@@ -328,13 +331,15 @@ export class PokerRoom {
   _advanceTurn() {
     const active=this.players.filter(p=>!p.folded);
     if(active.length===1){
+      // 其他人全部弃牌，剩余玩家赢得全部底池
       active[0].chips+=this.gameState.pot;
       this._broadcast({type:'message',message:`🏆 ${active[0].name} 赢得 ${this.gameState.pot} 筹码（其他人全部弃牌）`});
       this._endHand(); return;
     }
-    if(this._isBettingRoundComplete()){this._advanceStage();return;}
+    if(this._isBettingRoundComplete()){ this._advanceStage(); return; }
     const next=this._nextActionableIndex((this.gameState.currentPlayerIndex+1)%this.players.length);
-    if(next===-1){this._advanceStageAllIn();return;}
+    // 找不到可行动玩家（剩余艟均已全押或弃牌），直接推进阶段
+    if(next===-1){ this._advanceStage(); return; }
     this.gameState.currentPlayerIndex=next; this._broadcastState();
   }
 
@@ -348,55 +353,95 @@ export class PokerRoom {
     const gs=this.gameState;
     for(const p of this.players) p.bet=0;
     gs.currentBet=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
-    switch(gs.stage){
-      case 'preflop':
-        gs.stage='flop'; gs.community.push(gs.deck.pop(),gs.deck.pop(),gs.deck.pop());
-        this._broadcast({type:'message',message:`🂠 翻牌：${gs.community.join(' ')}`}); break;
-      case 'flop':
-        gs.stage='turn'; gs.community.push(gs.deck.pop());
-        this._broadcast({type:'message',message:`🂠 转牌：${gs.community[3]}`}); break;
-      case 'turn':
-        gs.stage='river'; gs.community.push(gs.deck.pop());
-        this._broadcast({type:'message',message:`🂠 河牌：${gs.community[4]}`}); break;
-      case 'river': gs.stage='showdown'; this._showdown(); return;
-      default: return;
-    }
-    gs.currentPlayerIndex=this._nextActionableIndex((gs.dealerIndex+1)%this.players.length);
-    this._broadcastState();
+    // 发公共牌
+    if(gs.stage==='preflop'){
+      gs.stage='flop'; gs.community.push(gs.deck.pop(),gs.deck.pop(),gs.deck.pop());
+      this._broadcast({type:'message',message:`🂠 翻牌：${gs.community.join(' ')}`});
+    } else if(gs.stage==='flop'){
+      gs.stage='turn'; gs.community.push(gs.deck.pop());
+      this._broadcast({type:'message',message:`🂠 转牌：${gs.community[3]}`});
+    } else if(gs.stage==='turn'){
+      gs.stage='river'; gs.community.push(gs.deck.pop());
+      this._broadcast({type:'message',message:`🂠 河牌：${gs.community[4]}`});
+    } else if(gs.stage==='river'){
+      gs.stage='showdown'; this._showdown(); return;
+    } else { return; }
+    // 检查是否还有玩家可以行动，如果全部全押则继续推进到摇牌
+    const next=this._nextActionableIndex((gs.dealerIndex+1)%this.players.length);
+    if(next===-1){ this._advanceStage(); return; }  // 递归推进直到摇牌
+    gs.currentPlayerIndex=next; this._broadcastState();
   }
 
-  _advanceStageAllIn() {
-    const gs=this.gameState;
-    for(const p of this.players) p.bet=0;
-    gs.currentBet=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
-    while(gs.community.length<5){
-      if(gs.stage==='preflop'){gs.community.push(gs.deck.pop(),gs.deck.pop(),gs.deck.pop());gs.stage='flop';}
-      else if(gs.stage==='flop'){gs.community.push(gs.deck.pop());gs.stage='turn';}
-      else if(gs.stage==='turn'){gs.community.push(gs.deck.pop());gs.stage='river';}
-      else break;
+  /**
+   * 根据每位玩家本局总投入（totalCommitted）计算主池与边池
+   * 返回 pots 数组，每项为 { amount, eligible: Player[] }
+   */
+  _buildSidePots() {
+    // 获取所有唯一投入额度，升序
+    const levels = [...new Set(this.players.map(p => p.totalCommitted || 0))]
+      .filter(l => l > 0).sort((a, b) => a - b);
+    const pots = [];
+    let prev = 0;
+    for (const level of levels) {
+      const inPool = this.players.filter(p => (p.totalCommitted || 0) >= level);
+      const amount = (level - prev) * inPool.length;
+      if (amount <= 0) { prev = level; continue; }
+      // 只有未弃牌且投入足够的玩家才有资格赢得此层底池
+      const eligible = inPool.filter(p => !p.folded);
+      pots.push({ amount, eligible });
+      prev = level;
     }
-    gs.stage='showdown'; this._broadcastState(); this._showdown();
+    return pots;
   }
 
   _showdown() {
-    const notFolded=this.players.filter(p=>!p.folded);
-    const results=notFolded.map(p=>{
-      const score=this._evaluateBestHand([...p.hand,...this.gameState.community]);
-      return {player:p,score,handName:this._handRankName(score)};
+    const notFolded = this.players.filter(p => !p.folded);
+    // 计算每位未弃牌玩家的最佳手牌
+    const handScores = {};
+    const handNames  = {};
+    for (const p of notFolded) {
+      const score = this._evaluateBestHand([...p.hand, ...this.gameState.community]);
+      handScores[p.id] = score;
+      handNames[p.id]  = this._handRankName(score);
+    }
+    // 构建主池/边池
+    const pots = this._buildSidePots();
+    // 每个玩家累计赢得筹码
+    const winnings = {};
+    const potResults = [];
+    for (const pot of pots) {
+      if (pot.eligible.length === 0) continue;
+      let bestScore = null;
+      for (const p of pot.eligible) {
+        const s = handScores[p.id];
+        if (!bestScore || this._compareScores(s, bestScore) > 0) bestScore = s;
+      }
+      const winners = pot.eligible.filter(p => this._compareScores(handScores[p.id], bestScore) === 0);
+      const share = Math.floor(pot.amount / winners.length);
+      for (const w of winners) {
+        w.chips += share;
+        winnings[w.id] = (winnings[w.id] || 0) + share;
+      }
+      potResults.push({
+        amount: pot.amount,
+        winners: winners.map(w => ({ id: w.id, name: w.name, amount: share, handName: handNames[w.id] })),
+      });
+    }
+    // 汇总赢家列表（用于展示）
+    const allWinners = Object.entries(winnings).map(([id, amount]) => {
+      const p = this.players.find(p => p.id === id);
+      return { id, name: p.name, amount, handName: handNames[id] || '' };
     });
-    results.sort((a,b)=>this._compareScores(b.score,a.score));
-    const topScore=results[0].score;
-    const winners=results.filter(r=>this._compareScores(r.score,topScore)===0);
-    const winAmount=Math.floor(this.gameState.pot/winners.length);
-    for(const w of winners) w.player.chips+=winAmount;
     this._broadcast({
-      type:'showdown',
-      results:notFolded.map(p=>({id:p.id,name:p.name,hand:p.hand,handName:results.find(r=>r.player.id===p.id)?.handName??''})),
-      winners:winners.map(w=>({id:w.player.id,name:w.player.name,amount:winAmount,handName:w.handName})),
-      community:this.gameState.community, pot:this.gameState.pot,
+      type: 'showdown',
+      results: notFolded.map(p => ({ id: p.id, name: p.name, hand: p.hand, handName: handNames[p.id] || '' })),
+      winners: allWinners,
+      pots: potResults,
+      community: this.gameState.community,
+      pot: this.gameState.pot,
     });
     this._broadcastState();
-    setTimeout(()=>this._endHand(),this.SHOWDOWN_DELAY);
+    setTimeout(() => this._endHand(), this.SHOWDOWN_DELAY);
   }
 
   _endHand() {
