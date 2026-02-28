@@ -116,7 +116,7 @@ export class PokerRoom {
   get SMALL_BLIND()    { return 10; }
   get BIG_BLIND()      { return 20; }
   get INITIAL_CHIPS()  { return 1000; }
-  get MAX_SEATS()      { return 8; }
+  get MAX_SEATS()      { return 10; }
   get DISCONNECT_TTL() { return 5 * 60 * 1000; }
   get SHOWDOWN_DELAY() { return 5000; }
 
