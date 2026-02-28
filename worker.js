@@ -1000,7 +1000,7 @@ export class PokerRoom {
         } else {
           this.dissolveVotes.add(playerId);
           const allConnected = [...this.players,...this.audience].filter(p=>p.connected);
-          const needed = Math.max(1, Math.floor(allConnected.length / 2));
+          const needed = Math.max(2, Math.floor(allConnected.length / 2));
           const count  = [...this.dissolveVotes].filter(id=>allConnected.find(p=>p.id===id)).length;
           this._broadcastState();
           this._broadcast({type:'message',message:`${person.name} 投票解散（${count}/${allConnected.length}，需要 ${needed}）`});
