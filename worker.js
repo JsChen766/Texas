@@ -1,6 +1,6 @@
 /**
  * worker.js — Cloudflare Worker + Durable Objects · 单房间德州扑克
- * v2: 持久筹码、借筹码功能、解散房间投票
+ * v2: 持久🍓、借🍓功能、解散房间投票
  */
 
 // ═══════════════════════════════════════════════
@@ -91,14 +91,14 @@ td{padding:8px;border-bottom:1px solid #21262d;vertical-align:middle}
   </div>
   <div class="card">
     <h2>👥 人员管理</h2>
-    <table id="pt"><thead><tr><th>名称</th><th>角色</th><th>筹码</th><th>欠款</th><th>连接</th><th>操作</th></tr></thead><tbody></tbody></table>
+    <table id="pt"><thead><tr><th>名称</th><th>角色</th><th>🍓</th><th>欠款</th><th>连接</th><th>操作</th></tr></thead><tbody></tbody></table>
   </div>
   <div class="card">
     <h2>⚙️ 游戏配置</h2>
     <div class="grid2">
-      <div><label>小盲注</label><input type="number" id="csb" min="1"/></div>
-      <div><label>大盲注</label><input type="number" id="cbb" min="1"/></div>
-      <div><label>初始筹码</label><input type="number" id="cic" min="100" step="100"/></div>
+      <div><label>小</label><input type="number" id="csb" min="1"/></div>
+      <div><label>大</label><input type="number" id="cbb" min="1"/></div>
+      <div><label>初始🍓</label><input type="number" id="cic" min="100" step="100"/></div>
       <div><label>最大座位数</label><input type="number" id="cms" min="2" max="20"/></div>
       <div><label>断线超时（分钟）</label><input type="number" id="cdt" min="1"/></div>
       <div><label>摊牌延迟（秒）</label><input type="number" id="csd" min="1"/></div>
@@ -161,7 +161,7 @@ async function load(){
     var role=p.role==='player'?'<span class="badge bp">玩家</span>':'<span class="badge ba">观众</span>';
     var ops='';
     if(p.role==='player')ops+='<button class="btn btn-y btn-s" onclick="kickP(\\''+p.id+'\\')">→观众</button> ';
-    ops+='<button class="btn btn-b btn-s" onclick="giveC(\\''+p.id+'\\',\\''+p.name+'\\')">筹码</button> ';
+    ops+='<button class="btn btn-b btn-s" onclick="giveC(\\''+p.id+'\\',\\''+p.name+'\\')">🍓</button> ';
     ops+='<button class="btn btn-s" onclick="rdbt(\\''+p.id+'\\',\\''+p.name+'\\')">清欠款</button>';
     tr.innerHTML='<td>'+p.name+'</td><td>'+role+'</td><td>'+p.chips+'</td>'
       +'<td style="color:'+(p.debt>0?'#ff7b72':'#8b949e')+'">'+( p.debt||0)+'</td>'
@@ -171,13 +171,13 @@ async function load(){
   });
 }
 async function kickP(id){if(!confirm('确认将该玩家移至观众席？'))return;var r=await api('/admin/kick','POST',{playerId:id});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
-async function giveC(id,name){var amt=prompt('为 '+name+' 调整筹码（正/负数）：');if(amt===null)return;var n=parseInt(amt,10);if(isNaN(n)){alert('请输入有效数字');return;}var r=await api('/admin/give-chips','POST',{playerId:id,amount:n});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
+async function giveC(id,name){var amt=prompt('为 '+name+' 调整🍓（正/负数）：');if(amt===null)return;var n=parseInt(amt,10);if(isNaN(n)){alert('请输入有效数字');return;}var r=await api('/admin/give-chips','POST',{playerId:id,amount:n});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
 async function rdbt(id,name){if(!confirm('确认清除 '+name+' 的全部欠款？'))return;var r=await api('/admin/reset-debt','POST',{playerId:id});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
 async function saveConfig(){
   var body={smallBlind:+document.getElementById('csb').value,bigBlind:+document.getElementById('cbb').value,initialChips:+document.getElementById('cic').value,maxSeats:+document.getElementById('cms').value,disconnectTtl:+document.getElementById('cdt').value*60000,showdownDelay:+document.getElementById('csd').value*1000};
   var r=await api('/admin/config','POST',body);showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);
 }
-async function forceDiss(){if(!confirm('确认强制解散？所有筹码数据将被清除！'))return;var r=await api('/admin/dissolve','POST');showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
+async function forceDiss(){if(!confirm('确认强制解散？所有🍓数据将被清除！'))return;var r=await api('/admin/dissolve','POST');showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);load();}
 async function changePwd(){var p1=document.getElementById('np').value,p2=document.getElementById('np2').value;if(!p1){showMsg(document.getElementById('mm'),'密码不能为空',false);return;}if(p1!==p2){showMsg(document.getElementById('mm'),'两次密码不一致',false);return;}var r=await api('/admin/change-password','POST',{newPassword:p1});showMsg(document.getElementById('mm'),r.data.message||r.data.error,r.ok);if(r.ok){document.getElementById('np').value='';document.getElementById('np2').value='';}}
 if(TOKEN)api('/admin/state').then(function(r){if(r.ok)showMain();else{TOKEN='';localStorage.removeItem('at');}});
 document.getElementById('pi').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
@@ -228,7 +228,7 @@ export class PokerRoom {
     this.adminToken     = null;
     this.adminTokenExp  = 0;
 
-    // 从持久存储加载玩家数据（筹码 + 欠款）+ 配置
+    // 从持久存储加载玩家数据（🍓 + 欠款）+ 配置
     this.persistedPlayers = {};
     this.state.blockConcurrencyWhile(async () => {
       const [pp, cfg, pwd] = await Promise.all([
@@ -336,7 +336,7 @@ export class PokerRoom {
           return this._adminJson({ message: `已操作 ${target.name}` });
         }
 
-        // 调整筹码
+        // 调整🍓
         if (p === '/admin/give-chips') {
           const target = this.players.find(x => x.id === body.playerId)
                       || this.audience.find(x => x.id === body.playerId);
@@ -346,7 +346,7 @@ export class PokerRoom {
           target.chips = Math.max(0, (target.chips || 0) + amt);
           this._savePlayerData();
           this._broadcastState();
-          return this._adminJson({ message: `${target.name} 筹码调整 ${amt > 0 ? '+' : ''}${amt}，当前：${target.chips}` });
+          return this._adminJson({ message: `${target.name} 🍓调整 ${amt > 0 ? '+' : ''}${amt}，当前：${target.chips}` });
         }
 
         // 清除欠款
@@ -614,7 +614,7 @@ export class PokerRoom {
 
     const connectable = this.players.filter(p => p.connected && p.chips > 0);
     if (connectable.length < 2) {
-      this._broadcast({ type: 'error', message: '至少需要 2 名有筹码且在线的玩家' }); return;
+      this._broadcast({ type: 'error', message: '至少需要 2 名有🍓且在线的玩家' }); return;
     }
     if (this.gameState.stage !== 'waiting') {
       this._broadcast({ type: 'error', message: '游戏已在进行中' }); return;
@@ -638,7 +638,7 @@ export class PokerRoom {
     gs.pot=sbAmt+bbAmt; gs.currentBet=bbAmt; gs.stage='preflop';
     gs.currentPlayerIndex=this._nextActionableIndex((gs.bigBlindIndex+1)%this.players.length);
     this._broadcastState();
-    this._broadcast({ type:'message', message:`🃏 新一局开始！庄家：${this.players[gs.dealerIndex].name}，小盲：${sbP.name}，大盲：${bbP.name}` });
+    this._broadcast({ type:'message', message:`🃏 新一局开始！庄家：${this.players[gs.dealerIndex].name}，小：${sbP.name}，大：${bbP.name}` });
   }
 
   _handleAction(playerId, action, amount) {
@@ -673,7 +673,7 @@ export class PokerRoom {
         const minRaise=gs.currentBet*2;
         if(!amount||amount<minRaise){this._sendTo(playerId,{type:'error',message:`加注至少需要 ${minRaise}`});return;}
         const totalBet=Math.min(amount,player.chips+player.bet), addChips=totalBet-player.bet;
-        if(addChips>player.chips){this._sendTo(playerId,{type:'error',message:'筹码不足'});return;}
+        if(addChips>player.chips){this._sendTo(playerId,{type:'error',message:'🍓不足'});return;}
         player.chips-=addChips; gs.pot+=addChips; player.bet=totalBet; gs.currentBet=totalBet;
         player.totalCommitted=(player.totalCommitted||0)+addChips;
         if(player.chips===0) player.allIn=true;
@@ -698,7 +698,7 @@ export class PokerRoom {
     if(active.length===1){
       // 其他人全部弃牌，剩余玩家赢得全部底池
       active[0].chips+=this.gameState.pot;
-      this._broadcast({type:'message',message:`🏆 ${active[0].name} 赢得 ${this.gameState.pot} 筹码（其他人全部弃牌）`});
+      this._broadcast({type:'message',message:`🏆 ${active[0].name} 赢得 ${this.gameState.pot} 🍓（其他人全部弃牌）`});
       this._endHand(); return;
     }
     if(this._isBettingRoundComplete()){ this._advanceStage(); return; }
@@ -771,7 +771,7 @@ export class PokerRoom {
     }
     // 构建主池/边池
     const pots = this._buildSidePots();
-    // 每个玩家累计赢得筹码
+    // 每个玩家累计赢得🍓
     const winnings = {};
     const potResults = [];
     for (const pot of pots) {
@@ -830,7 +830,7 @@ export class PokerRoom {
     this._broadcast({type:'message',message:'本局结束，等待开始新一局…'});
   }
 
-  /** 将所有玩家的筹码和欠款写入持久存储 */
+  /** 将所有玩家的🍓和欠款写入持久存储 */
   _savePlayerData() {
     const all = [...this.players, ...this.audience];
     for (const p of all) {
@@ -910,7 +910,7 @@ export class PokerRoom {
           const debt  = persisted ? (persisted.debt || 0) : 0;
           this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
           this._broadcastState();
-          this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（筹码 ${chips}${debt>0?' · 欠款 '+debt:''}）` });
+          this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（🍓 ${chips}${debt>0?' · 欠款 '+debt:''}）` });
         }
         break;
       }
@@ -975,16 +975,16 @@ export class PokerRoom {
 
       case 'action': this._handleAction(playerId,msg.action,msg.amount); break;
 
-      // ── 借筹码
+      // ── 借🍓
       case 'borrow': {
         if (this.gameState.stage !== 'waiting') {
-          this._sendTo(playerId,{type:'error',message:'只能在等待阶段借筹码'}); return;
+          this._sendTo(playerId,{type:'error',message:'只能在等待阶段借🍓'}); return;
         }
         const person = this.players.find(p=>p.id===playerId)||this.audience.find(p=>p.id===playerId);
         if (!person) return;
         person.chips += 1000; person.debt = (person.debt||0) + 1000;
         this._savePlayerData(); this._broadcastState();
-        this._broadcast({type:'message',message:`💳 ${person.name} 向银行借了 1000 筹码（累计欠款 ${person.debt}）`});
+        this._broadcast({type:'message',message:`💳 ${person.name} 向银行借了 1000 🍓（累计欠款 ${person.debt}）`});
         break;
       }
 
