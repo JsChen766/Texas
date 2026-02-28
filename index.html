@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>德州扑克</title>
+  <title>德 !</title>
   <style>
     /* ── Reset & Base ─────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -280,7 +280,7 @@
 
 <!-- ══ Login Screen ══════════════════════════════ -->
 <div id="login-screen">
-  <h2>♠ 德州扑克</h2>
+  <h2>♠ 德 !</h2>
   <p style="opacity:.6;font-size:.85rem">请输入你的昵称加入房间</p>
   <input id="name-input" type="text" maxlength="16" placeholder="你的昵称…" autocomplete="off" />
   <button id="btn-enter">进入房间</button>
@@ -290,11 +290,11 @@
 <div id="showdown-overlay">
   <h2>🃏 摊牌结果</h2>
   <div id="showdown-results"></div>
-  <p style="opacity:.5;font-size:.8rem">5 秒后自动关闭…</p>
+  <button id="btn-showdown-confirm" style="margin-top:8px;padding:10px 40px;border-radius:8px;background:#2e7d32;border:none;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;">确认</button>
 </div>
 
 <!-- ══ Main UI ════════════════════════════════════ -->
-<h1>♠ 德州扑克</h1>
+<h1>♠ 德 !</h1>
 <div id="conn-status" class="disconnected">⚫ 未连接</div>
 
 <div id="game-wrap">
@@ -313,6 +313,7 @@
       <div class="info-chip">阶段：<span id="stage-label">等待开始</span></div>
       <div class="info-chip">底池：<span id="pot-label">0</span></div>
       <div class="info-chip">当前注：<span id="bet-label">0</span></div>
+      <div class="info-chip" id="turn-chip" style="display:none">本回合：<span id="turn-label"></span></div>
     </div>
 
     <!-- 公共牌 -->

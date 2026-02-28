@@ -58,6 +58,9 @@ const handCard0        = document.getElementById('hand-0');
 const handCard1        = document.getElementById('hand-1');
 const showdownOverlay  = document.getElementById('showdown-overlay');
 const showdownResults  = document.getElementById('showdown-results');
+const btnShowdownConfirm = document.getElementById('btn-showdown-confirm');
+const turnLabel = document.getElementById('turn-label');
+const turnChip  = document.getElementById('turn-chip');
 
 const btnStart  = document.getElementById('btn-start');
 const btnFold   = document.getElementById('btn-fold');
@@ -196,9 +199,22 @@ function renderState(state) {
   stageLabel.textContent = STAGE_NAMES[state.stage] ?? state.stage;
   potLabel.textContent   = state.pot;
   betLabel.textContent   = state.currentBet;
+
+  // 轮到谁
+  const inGame = state.stage !== 'waiting' && state.stage !== 'showdown';
+  if (inGame && state.currentPlayerIndex >= 0 && state.players[state.currentPlayerIndex]) {
+    const curP = state.players[state.currentPlayerIndex];
+    const isSelf = curP.id === state.selfId;
+    turnLabel.textContent = isSelf ? `轮到你了！` : curP.name;
+    turnLabel.style.color = isSelf ? '#ffd600' : '#80cbc4';
+    turnChip.style.display = '';
+  } else {
+    turnChip.style.display = 'none';
+  }
+
   renderPlayerList(state);
   renderCommunityCards(state.community);
-  renderHandCardsFixed(state.selfHand);   // 每次从 DOM 重新查找节点，避免引用失效
+  renderHandCardsFixed(state.selfHand);
   updateButtons(state);
 }
 
@@ -473,7 +489,7 @@ function renderShowdown(msg) {
   });
 
   showdownOverlay.classList.add('visible');
-  setTimeout(() => showdownOverlay.classList.remove('visible'), 5500);
+  // 不再自动关闭，等待玩家点冻确认按钮
 
   appendLog(`摊牌结果：${msg.winners.map(w => `${w.name}（${w.handName}）+${w.amount}`).join('，')}`, 'system');
 }
@@ -560,9 +576,15 @@ btnDissolve.addEventListener('click', () => {
   send({ type: 'dissolve_vote' });
 });
 
-/* 关闭摊牌覆盖层 */
-showdownOverlay.addEventListener('click', () => {
+/* 开牌结果确认按钮 */
+btnShowdownConfirm.addEventListener('click', () => {
   showdownOverlay.classList.remove('visible');
+});
+
+/* 关闭摊牌覆盖层 */
+showdownOverlay.addEventListener('click', e => {
+  // 只允许点冻确认按钮关闭，不允许点冻背景关闭
+  if (e.target === showdownOverlay) return;  // 点到蒙层背景不关闭
 });
 
 // ═══════════════════════════════════════════════
