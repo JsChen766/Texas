@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -333,16 +333,16 @@
     button.action-btn:active  { transform: scale(.97); }
     button.action-btn:disabled { opacity: .22; cursor: default; filter: none; }
 
-    #btn-start   { background: #1a1e0a; color: #78c848; border: 1px solid #2c3612; }
-    #btn-fold    { background: #1e0e0a; color: #d05838; border: 1px solid #361808; }
-    #btn-check   { background: #1a1808; color: #b8a030; border: 1px solid #302a10; }
-    #btn-call    { background: #0e1a10; color: #48a870; border: 1px solid #183020; }
-    #btn-raise   { background: #201808; color: #d09030; border: 1px solid #382810; }
-    #btn-allin   { background: #221608; color: #e8a820; border: 1px solid #3a2808; }
-    #btn-borrow  { background: #181808; color: #c09830; border: 1px solid #2e2810; }
-    #btn-dissolve{ background: #1e1808; color: #706040; border: 1px solid #302818; }
-    #btn-dissolve.voted { background: #2e1008; color: #c04828; border-color: #481808; }
-    #btn-start.voted { background: #0e200a; color: #50a828; animation: pulse .8s infinite alternate; }
+    #btn-start   { background: #0e2a18; color: #90e890; border: 1px solid #1e4028; }
+    #btn-fold    { background: #2a0e0e; color: #f08080; border: 1px solid #401e1e; }
+    #btn-check   { background: #0a1638; color: #88a8f8; border: 1px solid #182450; }
+    #btn-call    { background: #081e16; color: #58d8b0; border: 1px solid #143028; }
+    #btn-raise   { background: #251a04; color: #e8b050; border: 1px solid #3a2808; }
+    #btn-allin   { background: #1c0e34; color: #c890f8; border: 1px solid #2e1850; }
+    #btn-borrow  { background: #0a1a34; color: #78b8e8; border: 1px solid #183050; }
+    #btn-dissolve{ background: #1c1810; color: #908060; border: 1px solid #2e2818; }
+    #btn-dissolve.voted { background: #2e1010; color: #d86060; border-color: #481818; }
+    #btn-start.voted { background: #0e3020; color: #60e060; animation: pulse .8s infinite alternate; }
 
     #raise-input {
       width: 130px; padding: 9px 12px;
@@ -491,16 +491,16 @@
     body.light .card.placeholder { background: #d4d4d4; border-color: #bfbfbf; box-shadow: none; }
     body.light #raise-input { background: #e0dcd4; border-color: #b0a080; color: #141414; }
     body.light #raise-input::placeholder { color: #888; }
-    body.light #btn-start    { background: #1c2a0a; color: #6ab840; border-color: #304010; }
-    body.light #btn-fold     { background: #2e1208; color: #d05030; border-color: #481808; }
-    body.light #btn-check    { background: #252008; color: #c0a028; border-color: #3a3010; }
-    body.light #btn-call     { background: #102010; color: #40a860; border-color: #1c3818; }
-    body.light #btn-raise    { background: #281e08; color: #d09028; border-color: #402e10; }
-    body.light #btn-allin    { background: #2c1e08; color: #e8a818; border-color: #483010; }
-    body.light #btn-borrow   { background: #201e08; color: #c09820; border-color: #382e10; }
-    body.light #btn-dissolve { background: #282010; color: #907848; border-color: #403018; }
-    body.light #btn-dissolve.voted { background: #381408; color: #c04828; border-color: #502010; }
-    body.light #btn-start.voted { background: #142808; color: #58b030; }
+    body.light #btn-start    { background: #cef0d8; color: #0a3018; border-color: #90d8a8; }
+    body.light #btn-fold     { background: #f0d0d0; color: #5a0a0a; border-color: #d8a0a0; }
+    body.light #btn-check    { background: #d0dcf8; color: #0a1e60; border-color: #a0b4e8; }
+    body.light #btn-call     { background: #c8f0e4; color: #083028; border-color: #88d8c0; }
+    body.light #btn-raise    { background: #f0e4c0; color: #482800; border-color: #d8c078; }
+    body.light #btn-allin    { background: #e8d0f8; color: #300858; border-color: #c0a0e0; }
+    body.light #btn-borrow   { background: #d0e4f8; color: #082040; border-color: #90c4e8; }
+    body.light #btn-dissolve { background: #f0e8d0; color: #3a2a10; border-color: #d8c890; }
+    body.light #btn-dissolve.voted { background: #f0d0d0; color: #5a1010; border-color: #d09090; }
+    body.light #btn-start.voted { background: #c8f0d4; color: #0a3818; }
     body.light body.my-turn #game-area { animation: action-glow-light 1s infinite alternate; }
     @keyframes action-glow-light {
       from { box-shadow: inset 3px 0 0 #8a6820; }
@@ -522,11 +522,9 @@
 <!-- ══ Login Screen ══════════════════════════════ -->
 <div id="login-screen">
   <h2>♠ 德 !</h2>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">⚠️ 最好不要用微信浏览器打开，用外部浏览器打开，这样退出重进仍然保留🍓等相关状态（名字不保留）</p>
+  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6"><i class="fa-solid fa-triangle-exclamation" style="color:#c8a030"></i> 最好不要用微信浏览器打开，用外部浏览器打开，这样退出重进仍然保留筹码等相关状态（名字不保留）</p>
   <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">用外部浏览器打开</p>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">这样退出重进仍然保留🍓等相关状态（名字不影响🍓）</p>
-  
-  <p style="font-size:.8rem;opacity:.75;text-align:center">本网站目前只用于群U娱乐使用，无其他用途</p>
+  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">这样退出重进仍然保留筹码等相关状态（名字不影响筹码）</p>
   <p style="font-size:.8rem;opacity:.75;text-align:center">叠甲叠甲叠甲！</p>
   <p style="opacity:.6;font-size:.85rem">请输入你的昵称加入房间</p>
   <input id="name-input" type="text" maxlength="16" placeholder="你的昵称…" autocomplete="off" />
