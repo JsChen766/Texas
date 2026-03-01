@@ -131,12 +131,25 @@ body{
 .container{max-width:960px;margin:0 auto;padding:20px 16px;display:flex;flex-direction:column;gap:16px}
 
 /* ── Global message ──────────────────────────── */
-#gm{
-  padding:10px 14px;border-radius:8px;font-size:.84rem;
-  display:none;
+/* ── Toast ────────────────────────────────── */
+#toast-box{
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  display:flex;flex-direction:column;gap:8px;pointer-events:none;
+  max-width:320px;
 }
-.gm-ok{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#86efac}
-.gm-err{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:#fca5a5}
+.toast{
+  padding:11px 16px;border-radius:9px;font-size:.83rem;font-weight:500;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+  animation:toast-in .22s ease;
+  pointer-events:none;
+  line-height:1.4;
+}
+@keyframes toast-in{
+  from{opacity:0;transform:translateY(10px) scale(.96)}
+  to{opacity:1;transform:none}
+}
+.toast-ok{background:#14532d;border:1px solid #166534;color:#86efac}
+.toast-err{background:#450a0a;border:1px solid #7f1d1d;color:#fca5a5}
 
 /* ── Panel card ──────────────────────────────── */
 .panel{
@@ -260,8 +273,6 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
   </div>
 
   <div class="container">
-    <div id="gm"></div>
-
     <!-- 状态卡片 -->
     <div class="panel">
       <div class="panel-head">
@@ -342,11 +353,17 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
 var BASE=location.origin,TOKEN=localStorage.getItem('at')||'',timer=null;
 
 function showMsg(txt,ok){
-  var el=document.getElementById('gm');
-  el.textContent=txt;el.style.display='block';
-  el.className=ok?'gm-ok':'gm-err';
-  clearTimeout(el._t);
-  el._t=setTimeout(function(){el.style.display='none';},4000);
+  if(!txt)return;
+  var box=document.getElementById('toast-box');
+  var t=document.createElement('div');
+  t.className='toast '+(ok?'toast-ok':'toast-err');
+  t.textContent=txt;
+  box.appendChild(t);
+  setTimeout(function(){
+    t.style.transition='opacity .3s,transform .3s';
+    t.style.opacity='0';t.style.transform='translateY(6px)';
+    setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},320);
+  },2800);
 }
 
 async function api(path,method,body){
@@ -498,6 +515,7 @@ async function changePwd(){
 if(TOKEN){api('/admin/state').then(function(r){if(r.ok)showMain();else{TOKEN='';localStorage.removeItem('at');}});}
 document.getElementById('pi').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 </script>
+<div id="toast-box"></div>
 </body>
 </html>`;
 
