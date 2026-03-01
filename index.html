@@ -247,8 +247,12 @@
 
     /* ── Info bar ─────────────────────────────────── */
     #info-bar {
-      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-      flex-shrink: 0;
+      display: flex; flex-direction: row; gap: 10px; align-items: center;
+      flex-shrink: 0; flex-wrap: nowrap;
+    }
+    #info-row-main {
+      display: flex; flex-direction: row; gap: 10px; align-items: center;
+      flex-shrink: 0; flex-wrap: nowrap;
     }
     .info-chip {
       background: transparent;
@@ -447,8 +451,10 @@
         width: 100%;
         overflow: visible;
       }
-      /* "本回合"在手机端独占一行 */
-      #turn-chip { width: 100%; padding-top: 4px; }
+      /* 手机端「本回合」独占一行：info-bar 改为列方向 */
+      #info-bar { flex-direction: column; align-items: flex-start; gap: 4px; }
+      #info-row-main { flex-wrap: wrap; gap: 8px; }
+      #turn-chip { padding-top: 0; width: auto; }
       .card { height: clamp(60px, 14vw, 90px); gap: 2px; }
       .card .rank { font-size: clamp(1rem, 4vw, 1.5rem); }
       .card .suit { font-size: clamp(1.1rem, 4.5vw, 1.7rem); }
@@ -603,9 +609,11 @@
 
     <!-- 状态栏 -->
     <div id="info-bar">
-      <div class="info-chip">阶段：<span id="stage-label">等待开始</span></div>
-      <div class="info-chip">底池：<span id="pot-label">0</span></div>
-      <div class="info-chip">当前注：<span id="bet-label">0</span></div>
+      <div id="info-row-main">
+        <div class="info-chip">阶段：<span id="stage-label">等待开始</span></div>
+        <div class="info-chip">底池：<span id="pot-label">0</span></div>
+        <div class="info-chip">当前注：<span id="bet-label">0</span></div>
+      </div>
       <div class="info-chip" id="turn-chip" style="display:none">本回合：<span id="turn-label"></span></div>
     </div>
 
