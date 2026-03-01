@@ -295,24 +295,27 @@
       height: clamp(80px, 20vh, 180px);
       width: auto;
       border-radius: var(--radius-md);
-      background: #f0ece6; color: #111;
+      /* 深色主题：黑色暗金材质 */
+      background: linear-gradient(150deg, #1e1a10 0%, #0e0b07 55%, #1c1a0f 100%);
+      color: #e0d8cc;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       gap: 4px;
       font-weight: 900;
-      border: none;
-      box-shadow: 0 6px 20px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.5);
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: 0 5px 22px rgba(0,0,0,.92), inset 0 1px 0 rgba(200,160,50,.10);
       user-select: none;
     }
     .card .rank { font-size: clamp(1.6rem, 4.5vh, 3rem); line-height: 1; letter-spacing: -0.03em; }
     .card .suit { font-size: clamp(1.9rem, 5.5vh, 3.6rem); line-height: 1; }
-    .card.hearts   .suit, .card.hearts   .rank { color: #bb1515; }
-    .card.diamonds .suit, .card.diamonds .rank { color: #bb1515; }
-    .card.clubs    .suit, .card.clubs    .rank { color: #141414; }
-    .card.spades   .suit, .card.spades   .rank { color: #141414; }
+    /* 深色主题花色：红色加亮，黑色改浅 */
+    .card.hearts   .suit, .card.hearts   .rank { color: #e83535; }
+    .card.diamonds .suit, .card.diamonds .rank { color: #e83535; }
+    .card.clubs    .suit, .card.clubs    .rank { color: #d8d0c4; }
+    .card.spades   .suit, .card.spades   .rank { color: #d8d0c4; }
     .card.placeholder {
-      background: #111;
-      border: 1px solid #1e1e1e;
+      background: #0e0e0e;
+      border: 1px solid #252520;
       box-shadow: none;
       color: transparent;
     }
@@ -508,7 +511,18 @@
     body.light .info-chip { color: #888; }
     body.light .info-chip::after { background: #c0c0c0; }
     body.light #action-area h4 { color: #909090; border-bottom-color: #d0d0d0; }
-    body.light .card.placeholder { background: #d4d4d4; border-color: #bfbfbf; box-shadow: none; }
+    /* 浅色主题：白色牌面，细黑边，无阴影 */
+    body.light .card {
+      background: #f8f5f0;
+      color: #111;
+      border: 1px solid #1c1c1c;
+      box-shadow: none;
+    }
+    body.light .card.hearts   .suit, body.light .card.hearts   .rank { color: #c01010; }
+    body.light .card.diamonds .suit, body.light .card.diamonds .rank { color: #c01010; }
+    body.light .card.clubs    .suit, body.light .card.clubs    .rank { color: #141414; }
+    body.light .card.spades   .suit, body.light .card.spades   .rank { color: #141414; }
+    body.light .card.placeholder { background: #d8d8d8; border-color: #aaaaaa; box-shadow: none; }
     body.light #raise-input { background: #e0dcd4; border-color: #b0a080; color: #141414; }
     body.light #raise-input::placeholder { color: #888; }
     body.light #btn-start    { background: #cef0d8; color: #0a3018; border-color: #90d8a8; }
