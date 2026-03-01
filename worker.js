@@ -1347,10 +1347,6 @@ export class PokerRoom {
         }
         this.audience = this.audience.filter(p => p.id !== playerId);
         this.players.push(inAud);
-        if (this.startVotes.size > 0) {
-          this.startVotes.clear();
-          this._broadcast({type:'message',message:'有玩家上座，开始投票已重置'});
-        }
         this._broadcastState();
         this._broadcast({type:'message',message:`🪑 ${inAud.name} 上座加入游戏！`});
         break;

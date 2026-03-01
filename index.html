@@ -335,12 +335,16 @@
       border-radius: 2px; font-weight: 700;
       white-space: nowrap; letter-spacing: .02em;
     }
-    .badge-D   { background: #661010;    color: #cc6060; }
-    .badge-SB  { background: #0d2a5c;    color: #5080c0; }
-    .badge-BB  { background: #2a1050;    color: #8050b0; }
-    .badge-off { background: #1c1c1c;    color: #383838; }
-    .badge-ai  { background: #3a1a00;    color: #a06020; }
-    .badge-dissolve { background: #661010; color: #cc4444; animation: pulse .8s infinite alternate; }
+    .badge-D       { background: #661010; color: #cc6060; }
+    .badge-SB      { background: #0d2a5c; color: #5080c0; }
+    .badge-BB      { background: #2a1050; color: #8050b0; }
+    .badge-off     { background: #1c1c1c; color: #383838; }
+    .badge-ai      { background: #3a1a00; color: #a06020; }
+    .badge-dissolve{ background: #661010; color: #cc4444; animation: pulse .8s infinite alternate; }
+    .badge-online  { background: #1b5e20; color: #a5d6a7; }
+    .badge-offline { background: #4a0000; color: #ef9a9a; }
+    .badge-ready   { background: #374f1a; color: #c5e09a; }
+    .badge-notready{ background: #1a237e; color: #9fa8da; opacity:.55; }
 
     /* ── Right game area ──────────────────────────── */
     #game-area {
@@ -707,6 +711,10 @@
     body.light .badge-off      { background: #d8d8d8; color: #686868; }
     body.light .badge-ai       { background: #ffeac0; color: #8a4400; }
     body.light .badge-dissolve { background: #ffd5d5; color: #a01010; }
+    body.light .badge-online   { background: #e8f5e9; color: #1b5e20; }
+    body.light .badge-offline  { background: #ffebee; color: #b71c1c; }
+    body.light .badge-ready    { background: #f1f8e9; color: #33691e; opacity:1; }
+    body.light .badge-notready { background: #e8eaf6; color: #283593; opacity:.65; }
     body.light .info-chip { color: #888; }
     body.light .info-chip::after { background: #c0c0c0; }
     body.light #action-area h4 { color: #909090; border-bottom-color: #d0d0d0; }
