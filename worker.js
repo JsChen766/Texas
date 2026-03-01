@@ -1294,12 +1294,24 @@ export class PokerRoom {
         const inAudience = this.audience.find(p => p.id === playerId);
         if (inPlayers) {
           inPlayers.connected = true; inPlayers.lastSeen = Date.now();
-          if (msg.name) inPlayers.name = msg.name;
+          if (msg.name) {
+            inPlayers.name = msg.name;
+            if (this.persistedPlayers[playerId]) {
+              this.persistedPlayers[playerId].name = msg.name;
+              this.state.storage.put('persistedPlayers', this.persistedPlayers).catch(() => {});
+            }
+          }
           this._broadcastState();
           this._broadcast({ type:'message', message:`${inPlayers.name} 重新连线（玩家）` });
         } else if (inAudience) {
           inAudience.connected = true; inAudience.lastSeen = Date.now();
-          if (msg.name) inAudience.name = msg.name;
+          if (msg.name) {
+            inAudience.name = msg.name;
+            if (this.persistedPlayers[playerId]) {
+              this.persistedPlayers[playerId].name = msg.name;
+              this.state.storage.put('persistedPlayers', this.persistedPlayers).catch(() => {});
+            }
+          }
           this._broadcastState();
           this._broadcast({ type:'message', message:`${inAudience.name} 重新连线（观众）` });
         } else {
@@ -1307,6 +1319,10 @@ export class PokerRoom {
           const persisted = this.persistedPlayers[playerId];
           const chips = (persisted && persisted.chips > 0) ? persisted.chips : this.config.initialChips;
           const debt  = persisted ? (persisted.debt || 0) : 0;
+          if (persisted && name) {
+            this.persistedPlayers[playerId].name = name;
+            this.state.storage.put('persistedPlayers', this.persistedPlayers).catch(() => {});
+          }
           this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
           this._broadcastState();
           this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（🍓 ${chips}${debt>0?' · 赊 '+debt:''}）` });
