@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>德 !</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
     /* ── Reset & Base ─────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -332,17 +333,16 @@
     button.action-btn:active  { transform: scale(.97); }
     button.action-btn:disabled { opacity: .22; cursor: default; filter: none; }
 
-    #btn-start   { background: #1a4d2e;  color: #78cc90; }
-    #btn-fold    { background: #3a1515;  color: #d06868; }
-    #btn-check   { background: #0e2248;  color: #6090d8; }
-    #btn-call    { background: #0a2e28;  color: #40a898; }
-    #btn-raise   { background: #361e08;  color: #c07840; }
-    #btn-allin   { background: #281040;  color: #9858c8; }
-    #btn-borrow  { background: #0e2a4a;  color: #5098cc; }
-    #btn-dissolve{ background: #1e1810; color: #5a4830;
-                   border: 1px solid #2a2218; }
-    #btn-dissolve.voted { background: #3a1010; color: #aa4040; border-color: #4a1818; }
-    #btn-start.voted { background: #103020; color: #3a9050; animation: pulse .8s infinite alternate; }
+    #btn-start   { background: #1a1e0a; color: #78c848; border: 1px solid #2c3612; }
+    #btn-fold    { background: #1e0e0a; color: #d05838; border: 1px solid #361808; }
+    #btn-check   { background: #1a1808; color: #b8a030; border: 1px solid #302a10; }
+    #btn-call    { background: #0e1a10; color: #48a870; border: 1px solid #183020; }
+    #btn-raise   { background: #201808; color: #d09030; border: 1px solid #382810; }
+    #btn-allin   { background: #221608; color: #e8a820; border: 1px solid #3a2808; }
+    #btn-borrow  { background: #181808; color: #c09830; border: 1px solid #2e2810; }
+    #btn-dissolve{ background: #1e1808; color: #706040; border: 1px solid #302818; }
+    #btn-dissolve.voted { background: #2e1008; color: #c04828; border-color: #481808; }
+    #btn-start.voted { background: #0e200a; color: #50a828; animation: pulse .8s infinite alternate; }
 
     #raise-input {
       width: 130px; padding: 9px 12px;
@@ -491,16 +491,16 @@
     body.light .card.placeholder { background: #d4d4d4; border-color: #bfbfbf; box-shadow: none; }
     body.light #raise-input { background: #e0dcd4; border-color: #b0a080; color: #141414; }
     body.light #raise-input::placeholder { color: #888; }
-    body.light #btn-start    { background: #1e5a34; color: #a8e8c0; }
-    body.light #btn-fold     { background: #7a1c1c; color: #f0c0c0; }
-    body.light #btn-check    { background: #1a3870; color: #a8c8f0; }
-    body.light #btn-call     { background: #0c4038; color: #90d0c8; }
-    body.light #btn-raise    { background: #702808; color: #f0c090; }
-    body.light #btn-allin    { background: #401068; color: #d0a0f0; }
-    body.light #btn-borrow   { background: #183e68; color: #90c0e8; }
-    body.light #btn-dissolve { background: #2e2818; color: #a09060; border-color: #4a3e28; }
-    body.light #btn-dissolve.voted { background: #7a1616; color: #f0a0a0; border-color: #9a2020; }
-    body.light #btn-start.voted { background: #0e3020; color: #40a068; }
+    body.light #btn-start    { background: #1c2a0a; color: #6ab840; border-color: #304010; }
+    body.light #btn-fold     { background: #2e1208; color: #d05030; border-color: #481808; }
+    body.light #btn-check    { background: #252008; color: #c0a028; border-color: #3a3010; }
+    body.light #btn-call     { background: #102010; color: #40a860; border-color: #1c3818; }
+    body.light #btn-raise    { background: #281e08; color: #d09028; border-color: #402e10; }
+    body.light #btn-allin    { background: #2c1e08; color: #e8a818; border-color: #483010; }
+    body.light #btn-borrow   { background: #201e08; color: #c09820; border-color: #382e10; }
+    body.light #btn-dissolve { background: #282010; color: #907848; border-color: #403018; }
+    body.light #btn-dissolve.voted { background: #381408; color: #c04828; border-color: #502010; }
+    body.light #btn-start.voted { background: #142808; color: #58b030; }
     body.light body.my-turn #game-area { animation: action-glow-light 1s infinite alternate; }
     @keyframes action-glow-light {
       from { box-shadow: inset 3px 0 0 #8a6820; }
@@ -542,10 +542,10 @@
 
 <!-- ══ Main UI ═══════════════════════════════════ -->
 <div id="app-header">
-  <h1>♠ 德 !</h1>
-  <div id="conn-status" class="disconnected">⚫ 未连接</div>
-  <button id="btn-theme">🌙 主题</button>
-  <button id="btn-exit">退出房间</button>
+  <h1>&#9824; 德 !</h1>
+  <div id="conn-status" class="disconnected"><i class="fa-solid fa-circle"></i> 未连接</div>
+  <button id="btn-theme"><i class="fa-solid fa-moon"></i> 主题</button>
+  <button id="btn-exit"><i class="fa-solid fa-right-from-bracket"></i> 退出房间</button>
 </div>
 
 <div id="game-wrap">
@@ -554,7 +554,7 @@
   <div id="player-panel">
     <div id="player-panel-header">
       <h3>玩家列表</h3>
-      <button id="btn-seat-toggle" style="background:#2e7d32;color:#fff;">🪑 上座</button>
+      <button id="btn-seat-toggle" style="background:#2e7d32;color:#fff;"><i class="fa-solid fa-right-to-bracket"></i> 上座</button>
     </div>
     <div id="player-list">
       <div id="seated-list"></div>
@@ -601,21 +601,21 @@
       <div id="action-buttons">
         <!-- 第一行：准备 | 解散 -->
         <div class="action-row">
-          <button id="btn-start"   class="action-btn">准备</button>
-          <button id="btn-dissolve" class="action-btn">🚪 解散房间</button>
+          <button id="btn-start"   class="action-btn"><i class="fa-solid fa-check"></i> 准备</button>
+          <button id="btn-dissolve" class="action-btn"><i class="fa-solid fa-door-open"></i> 解散房间</button>
         </div>
         <!-- 第二行：借🍓 | 弃牌 | 过牌 | 跟注 -->
         <div class="action-row">
-          <button id="btn-borrow" class="action-btn">💳 借🍓(+1000)</button>
-          <button id="btn-fold"   class="action-btn" disabled>弃牌</button>
-          <button id="btn-check"  class="action-btn" disabled>过牌</button>
-          <button id="btn-call"   class="action-btn" disabled>跟注</button>
+          <button id="btn-borrow" class="action-btn"><i class="fa-solid fa-coins"></i> 借(+1000)</button>
+          <button id="btn-fold"   class="action-btn" disabled><i class="fa-solid fa-xmark"></i> 弃牌</button>
+          <button id="btn-check"  class="action-btn" disabled><i class="fa-solid fa-minus"></i> 过牌</button>
+          <button id="btn-call"   class="action-btn" disabled><i class="fa-solid fa-equals"></i> 跟注</button>
         </div>
         <!-- 第三行：加注输入 | 加注 | All In -->
         <div class="action-row">
           <input  id="raise-input" type="number" min="5" step="5" placeholder="加注金额" disabled />
-          <button id="btn-raise"  class="action-btn" disabled>加注</button>
-          <button id="btn-allin"  class="action-btn" disabled>All In !!</button>
+          <button id="btn-raise"  class="action-btn" disabled><i class="fa-solid fa-arrow-up"></i> 加注</button>
+          <button id="btn-allin"  class="action-btn" disabled><i class="fa-solid fa-fire"></i> All In !!</button>
         </div>
       </div>
     </div>
@@ -629,10 +629,13 @@
   (function(){
     var btn = document.getElementById('btn-theme');
     var saved = localStorage.getItem('theme');
-    if(saved === 'light') { document.body.classList.add('light'); btn.textContent = '☀️ 主题'; }
+    if(saved === 'light') {
+      document.body.classList.add('light');
+      btn.innerHTML = '<i class="fa-solid fa-sun"></i> 主题';
+    }
     btn.addEventListener('click', function(){
       var isLight = document.body.classList.toggle('light');
-      btn.textContent = isLight ? '☀️ 主题' : '🌙 主题';
+      btn.innerHTML = isLight ? '<i class="fa-solid fa-sun"></i> 主题' : '<i class="fa-solid fa-moon"></i> 主题';
       localStorage.setItem('theme', isLight ? 'light' : 'dark');
     });
   })();
