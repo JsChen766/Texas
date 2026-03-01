@@ -555,7 +555,7 @@ export class PokerRoom {
       initialChips:  1000,
       maxSeats:      10,
       disconnectTtl: 5 * 60 * 1000,
-      showdownDelay: 5000,
+      showdownDelay: 2000,
     };
 
     // 管理员鉴权（token 仅内存保存，重启失效）
@@ -574,6 +574,8 @@ export class PokerRoom {
       ]);
       this.persistedPlayers = pp || {};
       if (cfg) Object.assign(this.config, cfg);
+      // 如果历史配置的摊牌延迟超过 2s，自动收紧到 2s
+      if (this.config.showdownDelay > 2000) this.config.showdownDelay = 2000;
       if (pwd) this.adminPassword = pwd;
     });
   }
