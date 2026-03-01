@@ -152,12 +152,22 @@
     /* ── Seat toggle ──────────────────────────────── */
     #btn-seat-toggle {
       font-size: .68rem; padding: 4px 10px; border-radius: var(--radius-sm);
-      border: none; cursor: pointer; font-weight: 600;
+      border: 1px solid; cursor: pointer; font-weight: 600;
       white-space: nowrap; flex-shrink: 0;
-      transition: opacity .2s, transform .1s;
+      transition: opacity .2s, transform .1s, background .15s;
+      /* 深色主题默认：深绿底+亮绿字 */
+      background: #0e2a18; color: #90e890; border-color: #1e4028;
     }
+    #btn-seat-toggle:hover   { filter: brightness(1.2); }
     #btn-seat-toggle:active  { transform: scale(.95); }
-    #btn-seat-toggle:disabled { opacity: .35; cursor: default; }
+    #btn-seat-toggle:disabled { opacity: .35; cursor: default; filter: none; }
+    /* 上座状态：绿 */
+    #btn-seat-toggle.seat-take { background: #0e2a18; color: #90e890; border-color: #1e4028; }
+    /* 让座状态：欲 */
+    #btn-seat-toggle.seat-leave { background: #2a1804; color: #e8b050; border-color: #3a2808; }
+    /* 浅色主题 */
+    body.light #btn-seat-toggle.seat-take  { background: #cef0d8; color: #0a3018; border-color: #90d8a8; }
+    body.light #btn-seat-toggle.seat-leave { background: #f0e4c0; color: #482800; border-color: #d8c078; }
 
     #player-list {
       flex: 1; display: flex; flex-direction: column;
@@ -595,7 +605,7 @@
   <div id="player-panel">
     <div id="player-panel-header">
       <h3>玩家列表</h3>
-      <button id="btn-seat-toggle" style="background:#2e7d32;color:#fff;"><i class="fa-solid fa-right-to-bracket"></i> 上座</button>
+      <button id="btn-seat-toggle" class="seat-take"><i class="fa-solid fa-right-to-bracket"></i> 上座</button>
     </div>
     <div id="player-list">
       <div id="seated-list"></div>
