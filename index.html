@@ -403,7 +403,70 @@
     }
     #hand-area {
       flex: 1; display: flex; flex-direction: column;
-      justify-content: center; min-height: 0;
+      align-items: center; justify-content: center;
+      min-height: 0; position: relative;
+    }
+
+    /* ── 彩蛋：转运按鈕 ───────────────────── */
+    #btn-lucky {
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #7a0a0a;
+      color: #ffaaaa;
+      border: 1px solid #c03030;
+      border-radius: 8px;
+      font-size: .72rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      line-height: 1.3;
+      text-align: center;
+      transition: background .15s, transform .1s, opacity .2s;
+      z-index: 5;
+      letter-spacing: .02em;
+    }
+    #btn-lucky:hover  { background: #9a1010; filter: brightness(1.15); }
+    #btn-lucky:active { transform: translateY(-50%) scale(.93); }
+    body.light #btn-lucky {
+      background: #ffe0e0;
+      color: #7a0a0a;
+      border-color: #e08080;
+    }
+    body.light #btn-lucky:hover { background: #ffcccc; }
+
+    /* ── 彩蛋 Toast ───────────────────────── */
+    #lucky-toast {
+      position: fixed;
+      bottom: 72px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: #14532d;
+      color: #86efac;
+      border: 1px solid #16a34a;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: .88rem;
+      font-weight: 700;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 999;
+      transition: opacity .25s, transform .25s;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(0,0,0,.5);
+    }
+    #lucky-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    body.light #lucky-toast {
+      background: #dcfce7;
+      color: #14532d;
+      border-color: #86efac;
+      box-shadow: 0 4px 18px rgba(0,0,0,.18);
     }
     #community-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
     #hand-cards      { display: flex; gap: 16px; justify-content: center; flex-shrink: 0; }
@@ -773,7 +836,9 @@
         <div class="card placeholder" id="hand-0"></div>
         <div class="card placeholder" id="hand-1"></div>
       </div>
+      <button id="btn-lucky">🃨 点击转运</button>
     </div>
+    <div id="lucky-toast">🍀 转运成功！</div>
 
 
     <!-- 行动按钮 -->

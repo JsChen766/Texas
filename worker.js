@@ -964,6 +964,7 @@ export class PokerRoom {
           selfHand: isSeated ? (person.hand || []) : [],
           selfId:   person.id,
           selfRole: isSeated ? 'player' : 'audience',
+          selfNetProfit: (this.persistedPlayers[person.id] || {}).netProfit || 0,
           dissolveVotes: dissolveCount, dissolveTotal: allConnected.length,
           startVotes:    startCount,    startTotal:    seatedConnected.length,
           kickStatus,
