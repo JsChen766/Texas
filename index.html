@@ -438,6 +438,83 @@
       .card { height: clamp(80px, 16vh, 130px); }
       #game-area-inner { padding: 16px 20px; }
     }
+
+    /* ── Theme toggle button ────────────────────────── */
+    #btn-theme {
+      padding: 5px 12px; border-radius: var(--radius-sm);
+      background: transparent;
+      border: 1px solid #2a2a2a;
+      color: #606060; font-size: .72rem; cursor: pointer;
+      transition: background .15s, color .15s, border-color .15s;
+      letter-spacing: .3px; white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #btn-theme:hover { background: var(--hover); color: var(--text); border-color: #484848; }
+
+    /* ── Light theme ─────────────────────────────── */
+    body.light {
+      --bg:          #f0f0f0;
+      --sidebar:     #e4e4e4;
+      --panel:       #d8d8d8;
+      --panel-inner: #ebebeb;
+      --hover:       #d0d0d0;
+      --active:      #a8c4e8;
+      --accent:      #2a5cb0;
+      --accent-dark: #1e4490;
+      --header-bg:   #e8e8e8;
+      --divider:     rgba(0,0,0,0.1);
+      --text:        #141414;
+      --text-muted:  #606060;
+      --gold:        #7a5808;
+      --shadow:      0 2px 12px rgba(0,0,0,.15);
+    }
+    body.light #app-header h1 { color: #505050; }
+    body.light #btn-exit { border-color: #c0c0c0; color: #888; }
+    body.light #btn-exit:hover { background: #8a1a1a; color: #f0c8c8; border-color: #8a1a1a; }
+    body.light #btn-theme { border-color: #c0c0c0; color: #888; }
+    body.light #btn-theme:hover { background: var(--hover); color: #333; border-color: #999; }
+    body.light #conn-status { background: #c8ecd0; color: #1a5a2a; border-color: #9ad0aa; }
+    body.light #conn-status.disconnected { background: #f0cece; color: #8a1a1a; border-color: #d09090; }
+    body.light #conn-status.reconnecting { background: #f0e0c0; color: #8a5010; border-color: #d0b080; }
+    body.light #player-panel-header h3 { color: #888; }
+    body.light .audience-section-header { color: #888; }
+    body.light .player-name { color: #1a1a1a; }
+    body.light .player-chips { color: var(--gold); }
+    body.light .player-bet { color: #2060a0; }
+    body.light .player-debt { color: #902020; }
+    body.light .player-avatar { background: #b8ccdf; color: #2a508a; }
+    body.light .player-row:hover { background: var(--hover); }
+    body.light .badge-off { background: #d0d0d0; color: #686868; }
+    body.light .info-chip { color: #888; }
+    body.light .info-chip::after { background: #c0c0c0; }
+    body.light #action-area h4 { color: #909090; border-bottom-color: #d0d0d0; }
+    body.light .card.placeholder { background: #d4d4d4; border-color: #bfbfbf; box-shadow: none; }
+    body.light #raise-input { background: #e0dcd4; border-color: #b0a080; color: #141414; }
+    body.light #raise-input::placeholder { color: #888; }
+    body.light #btn-start    { background: #1e5a34; color: #a8e8c0; }
+    body.light #btn-fold     { background: #7a1c1c; color: #f0c0c0; }
+    body.light #btn-check    { background: #1a3870; color: #a8c8f0; }
+    body.light #btn-call     { background: #0c4038; color: #90d0c8; }
+    body.light #btn-raise    { background: #702808; color: #f0c090; }
+    body.light #btn-allin    { background: #401068; color: #d0a0f0; }
+    body.light #btn-borrow   { background: #183e68; color: #90c0e8; }
+    body.light #btn-dissolve { background: #2e2818; color: #a09060; border-color: #4a3e28; }
+    body.light #btn-dissolve.voted { background: #7a1616; color: #f0a0a0; border-color: #9a2020; }
+    body.light #btn-start.voted { background: #0e3020; color: #40a068; }
+    body.light body.my-turn #game-area { animation: action-glow-light 1s infinite alternate; }
+    @keyframes action-glow-light {
+      from { box-shadow: inset 3px 0 0 #8a6820; }
+      to   { box-shadow: inset 4px 0 20px rgba(120,88,20,.2); }
+    }
+    body.light #login-screen { background: rgba(240,240,240,.97); }
+    body.light #login-screen h2 { color: #141414; }
+    body.light #login-screen input { background: #e4e4e4; border-color: #c0c0c0; color: #141414; }
+    body.light #showdown-overlay { background: rgba(240,240,240,.96); }
+    body.light #showdown-overlay h2 { color: #444; }
+    body.light .sd-player { background: #d8d8d8; border-color: #c0c0c0; }
+    body.light .sd-player.winner { background: #f0e8be; border-color: #b89830; }
+    body.light .sd-player .sd-name { color: #222; }
+    body.light .sd-player .sd-rank { color: #707070; }
   </style>
 </head>
 <body>
@@ -467,6 +544,7 @@
 <div id="app-header">
   <h1>♠ 德 !</h1>
   <div id="conn-status" class="disconnected">⚫ 未连接</div>
+  <button id="btn-theme">🌙 主题</button>
   <button id="btn-exit">退出房间</button>
 </div>
 
@@ -547,5 +625,17 @@
 </div><!-- #game-wrap -->
 
 <script src="main.js"></script>
+<script>
+  (function(){
+    var btn = document.getElementById('btn-theme');
+    var saved = localStorage.getItem('theme');
+    if(saved === 'light') { document.body.classList.add('light'); btn.textContent = '☀️ 主题'; }
+    btn.addEventListener('click', function(){
+      var isLight = document.body.classList.toggle('light');
+      btn.textContent = isLight ? '☀️ 主题' : '🌙 主题';
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    });
+  })();
+</script>
 </body>
 </html>
