@@ -19,9 +19,9 @@
       --accent-dark: #2d5eb0;
       --header-bg:   #0d0d0d;
       --divider:     rgba(255,255,255,0.08);
-      --text:        #c2c2c2;
-      --text-muted:  #4a4a4a;
-      --gold:        #b88a28;
+      --text:        #e4e4e4;
+      --text-muted:  #707070;
+      --gold:        #c49a38;
       --green:       #216640;
       --green-dark:  #133d24;
       --red:         #992222;
@@ -92,7 +92,7 @@
     }
     #app-header h1 {
       font-size: 1rem; font-weight: 600;
-      letter-spacing: 1px; color: #888;
+      letter-spacing: 1px; color: #aaa;
       flex: 1; text-transform: uppercase;
     }
     #btn-exit {
@@ -110,12 +110,12 @@
     #conn-status {
       padding: 4px 12px; border-radius: var(--radius-sm);
       font-size: .7rem; font-weight: 600;
-      background: #0f200f; color: #4a9a5a;
-      border: 1px solid #1a3a1a;
+      background: #0f200f; color: #6abf7a;
+      border: 1px solid #1a4a1a;
       white-space: nowrap; letter-spacing: .2px;
     }
-    #conn-status.disconnected { background: #1e0a0a; color: #884444; border-color: #2e1010; }
-    #conn-status.reconnecting { background: #1e1200; color: #886622; border-color: #2e1e00; }
+    #conn-status.disconnected { background: #1e0a0a; color: #c06060; border-color: #3a1010; }
+    #conn-status.reconnecting { background: #1e1200; color: #c09040; border-color: #3a2800; }
 
     /* ── Main layout ──────────────────────────────── */
     #game-wrap {
@@ -144,7 +144,7 @@
     }
     #player-panel-header h3 {
       font-size: .68rem; font-weight: 600;
-      color: #383838;
+      color: #686868;
       text-transform: uppercase; letter-spacing: .1em;
     }
 
@@ -180,7 +180,7 @@
 
     /* ── Audience styles ──────────────────────────── */
     .audience-section-header {
-      font-size: .65rem; color: #363636;
+      font-size: .65rem; color: #646464;
       padding: 4px 2px 2px; text-transform: uppercase; letter-spacing: .08em;
     }
     .audience-row { opacity: .65; }
@@ -209,10 +209,10 @@
       flex-shrink: 0; color: #6888aa;
     }
     .player-info  { flex: 1; min-width: 0; }
-    .player-name  { font-size: .88rem; font-weight: 600; display:flex; align-items:center; gap:3px; flex-wrap:wrap; min-width:0; overflow:hidden; }
+    .player-name  { font-size: .88rem; font-weight: 600; display:flex; align-items:center; gap:3px; flex-wrap:wrap; min-width:0; overflow:hidden; color: #d8d8d8; }
     .player-chips { font-size: .82rem; color: var(--gold); font-weight: 500; }
-    .player-bet   { font-size: .74rem; color: #406880; }
-    .player-debt  { font-size: .74rem; color: #883030; }
+    .player-bet   { font-size: .74rem; color: #5090b0; }
+    .player-debt  { font-size: .74rem; color: #b05050; }
 
     /* ── Badges ───────────────────────────────────── */
     .badge {
@@ -231,54 +231,55 @@
     #game-area {
       flex: 1;
       background: var(--bg);
-      display: flex; flex-direction: column; gap: 0;
-      overflow-y: auto;
-      scrollbar-width: thin; scrollbar-color: #1e1e1e transparent;
+      display: flex; flex-direction: column;
+      overflow: hidden;
       min-width: 0;
     }
-    #game-area::-webkit-scrollbar { width: 3px; }
-    #game-area::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 1px; }
     #game-area-inner {
-      padding: 28px 36px;
-      display: flex; flex-direction: column; gap: 28px;
+      flex: 1;
+      padding: 20px 32px;
+      display: flex; flex-direction: column; gap: 18px;
       width: 100%;
+      overflow: hidden;
+      min-height: 0;
     }
 
     /* ── Info bar ─────────────────────────────────── */
     #info-bar {
       display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+      flex-shrink: 0;
     }
     .info-chip {
       background: transparent;
-      padding: 4px 0;
-      font-size: .8rem; color: #3a3a3a;
+      padding: 3px 0;
+      font-size: .8rem; color: #707070;
       border: none;
     }
-    .info-chip::after { content: ''; display: inline-block; width: 1px; height: 10px; background: #222; margin-left: 10px; vertical-align: middle; }
+    .info-chip::after { content: ''; display: inline-block; width: 1px; height: 10px; background: #282828; margin-left: 10px; vertical-align: middle; }
     .info-chip:last-child::after { display: none; }
     .info-chip span { color: var(--gold); font-weight: 700; }
 
     /* ── Section headings ─────────────────────────── */
     .section-label {
-      font-size: .65rem; font-weight: 600;
-      color: #303030; text-transform: uppercase;
-      letter-spacing: .12em; margin-bottom: 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #181818;
+      font-size: .62rem; font-weight: 600;
+      color: #505050; text-transform: uppercase;
+      letter-spacing: .12em; margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1c1c1c;
     }
     #community-area h4,
     #hand-area h4,
     #action-area h4 {
-      font-size: .65rem; font-weight: 600;
-      color: #303030; text-transform: uppercase;
-      letter-spacing: .12em; margin-bottom: 14px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #181818;
+      font-size: .62rem; font-weight: 600;
+      color: #505050; text-transform: uppercase;
+      letter-spacing: .12em; margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1c1c1c;
     }
 
     /* ── Cards ────────────────────────────────────── */
-    #community-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
-    #hand-cards      { display: flex; gap: 16px; }
+    #community-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
+    #hand-cards      { display: flex; gap: 16px; justify-content: center; flex-shrink: 0; }
 
     .card {
       width: 80px; height: 116px; border-radius: var(--radius-md);
@@ -304,9 +305,10 @@
     }
 
     /* ── Action buttons ───────────────────────────── */
-    #action-buttons { display: flex; flex-direction: column; gap: 10px; }
+    #action-area { flex-shrink: 0; }
+    #action-buttons { display: flex; flex-direction: column; gap: 8px; }
     .action-row     { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .action-row .action-btn { flex: 1; min-width: 90px; }
+    .action-row .action-btn { flex: 1; min-width: 84px; }
 
     button.action-btn {
       padding: 11px 18px; border-radius: var(--radius-sm);
@@ -319,13 +321,13 @@
     button.action-btn:active  { transform: scale(.97); }
     button.action-btn:disabled { opacity: .22; cursor: default; filter: none; }
 
-    #btn-start   { background: #1a4d2e;  color: #5aad78; }
-    #btn-fold    { background: #3a1515;  color: #a04040; }
-    #btn-check   { background: #0e2248;  color: #4870b8; }
-    #btn-call    { background: #0a2e28;  color: #308878; }
-    #btn-raise   { background: #361e08;  color: #986030; }
-    #btn-allin   { background: #281040;  color: #7840a8; }
-    #btn-borrow  { background: #0e2a4a;  color: #3a7aaa; }
+    #btn-start   { background: #1a4d2e;  color: #78cc90; }
+    #btn-fold    { background: #3a1515;  color: #d06868; }
+    #btn-check   { background: #0e2248;  color: #6090d8; }
+    #btn-call    { background: #0a2e28;  color: #40a898; }
+    #btn-raise   { background: #361e08;  color: #c07840; }
+    #btn-allin   { background: #281040;  color: #9858c8; }
+    #btn-borrow  { background: #0e2a4a;  color: #5098cc; }
     #btn-dissolve{ background: #1e1810; color: #5a4830;
                    border: 1px solid #2a2218; }
     #btn-dissolve.voted { background: #3a1010; color: #aa4040; border-color: #4a1818; }
@@ -402,18 +404,22 @@
       }
       #game-area {
         overflow-y: visible;
+        overflow: visible;
         order: 1;
       }
       #game-area-inner {
-        padding: 14px 14px;
-        gap: 18px;
+        padding: 12px 12px;
+        gap: 14px;
         width: 100%;
+        overflow: visible;
       }
-      .card { width: 52px; height: 76px; }
-      .card .rank { font-size: 1rem; }
-      .card .suit { font-size: 1.1rem; }
-      #community-cards { gap: 8px; }
-      #hand-cards { gap: 10px; }
+      .card { width: 48px; height: 70px; }
+      .card .rank { font-size: .9rem; }
+      .card .suit { font-size: 1rem; }
+      #community-cards { gap: 6px; }
+      #hand-cards { gap: 8px; }
+      button.action-btn { font-size: .72rem; padding: 9px 6px; letter-spacing: 0; }
+      #raise-input { width: 90px; font-size: .78rem; padding: 8px 8px; }
     }
 
     /* ── Tablet ───────────────────────────────────── */
@@ -484,7 +490,6 @@
 
     <!-- 公共牌 -->
     <div id="community-area">
-      <h4>公共牌</h4>
       <div id="community-cards">
         <!-- 5 个占位 -->
         <div class="card placeholder" data-slot="0"></div>
@@ -497,7 +502,6 @@
 
     <!-- 自己手牌 -->
     <div id="hand-area">
-      <h4>我的手牌</h4>
       <div id="hand-cards">
         <div class="card placeholder" id="hand-0"></div>
         <div class="card placeholder" id="hand-1"></div>
