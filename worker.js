@@ -565,6 +565,7 @@ export class PokerRoom {
 
     // 从持久存储加载玩家数据（🍓 + 欠款）+ 配置
     this.persistedPlayers = {};
+    this.handStartChips   = {};  // 本局起始筹码，用于计算净盈亏
     this.state.blockConcurrencyWhile(async () => {
       const [pp, cfg, pwd] = await Promise.all([
         this.state.storage.get('persistedPlayers'),
@@ -582,6 +583,17 @@ export class PokerRoom {
     if (request.headers.get('Upgrade') === 'websocket') {
       return this._upgradeWebSocket(request);
     }
+    // ── 公开接口：战况统计（无需鉴权）────────────────────
+    if (p === '/battle-stats' && request.method === 'GET') {
+      const stats = Object.entries(this.persistedPlayers)
+        .filter(([, d]) => d.netProfit !== undefined)
+        .map(([id, d]) => ({ id, name: d.name, netProfit: d.netProfit || 0 }))
+        .sort((a, b) => b.netProfit - a.netProfit);
+      return new Response(JSON.stringify({ stats }), {
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
+    }
+
     if (url.pathname === '/status') {
       return new Response(
         JSON.stringify({
@@ -993,6 +1005,9 @@ export class PokerRoom {
     gs.smallBlindIndex = (gs.dealerIndex + 1) % this.players.length;
     gs.bigBlindIndex   = (gs.dealerIndex + 2) % this.players.length;
     for (const p of this.players) p.hand = [gs.deck.pop(), gs.deck.pop()];
+    // ── 记录本局起始筹码（盲注扣减前），用于结局净盈亏统计 ──
+    this.handStartChips = {};
+    for (const p of this.players) this.handStartChips[p.id] = p.chips;
     const sbP=this.players[gs.smallBlindIndex], bbP=this.players[gs.bigBlindIndex];
     const sbAmt=Math.min(this.config.smallBlind,sbP.chips), bbAmt=Math.min(this.config.bigBlind,bbP.chips);
     sbP.chips-=sbAmt; sbP.bet=sbAmt; sbP.totalCommitted=sbAmt; if(sbP.chips===0) sbP.allIn=true;
@@ -1182,6 +1197,15 @@ export class PokerRoom {
       } else { remaining2.push(p); }
     }
     this.players = remaining2;
+    // ── 结算净盈亏：遍历本局参与者，计算与起始筹码的差值 ──
+    for (const [id, startChips] of Object.entries(this.handStartChips)) {
+      const p = this.players.find(x => x.id === id) || this.audience.find(x => x.id === id);
+      if (!p) continue;
+      const delta = p.chips - startChips;
+      const prev  = this.persistedPlayers[id] || {};
+      this.persistedPlayers[id] = { ...prev, name: p.name, netProfit: (prev.netProfit || 0) + delta };
+    }
+    this.handStartChips = {};
     this.players=this.players.filter(p=>p.chips>0||p.connected);
     const gs=this.gameState;
     gs.stage='waiting'; gs.community=[]; gs.pot=0;
@@ -1192,11 +1216,12 @@ export class PokerRoom {
     this._broadcast({type:'message',message:'本局结束，等待开始新一局…'});
   }
 
-  /** 将所有玩家的🍓和欠款写入持久存储 */
+  /** 将所有玩家的🍓和欠款写入持久存储（保留 netProfit 等历史字段） */
   _savePlayerData() {
     const all = [...this.players, ...this.audience];
     for (const p of all) {
-      this.persistedPlayers[p.id] = { chips: p.chips, debt: p.debt || 0, name: p.name };
+      const prev = this.persistedPlayers[p.id] || {};
+      this.persistedPlayers[p.id] = { chips: p.chips, debt: p.debt || 0, name: p.name, netProfit: prev.netProfit || 0 };
     }
     this.state.storage.put('persistedPlayers', this.persistedPlayers).catch(() => {});
   }
