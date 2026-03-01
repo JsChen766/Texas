@@ -584,13 +584,24 @@ export class PokerRoom {
       return this._upgradeWebSocket(request);
     }
     // ── 公开接口：战况统计（无需鉴权）────────────────────
-    if (p === '/battle-stats' && request.method === 'GET') {
+    if (url.pathname === '/battle-stats') {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { headers: {
+          'Access-Control-Allow-Origin':  '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        }});
+      }
       const stats = Object.entries(this.persistedPlayers)
         .filter(([, d]) => d.netProfit !== undefined)
         .map(([id, d]) => ({ id, name: d.name, netProfit: d.netProfit || 0 }))
         .sort((a, b) => b.netProfit - a.netProfit);
       return new Response(JSON.stringify({ stats }), {
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        },
       });
     }
 

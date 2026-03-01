@@ -534,10 +534,19 @@
       border-color: #5a4010;
       background: #181100;
     }
-    .sd-player .sd-name  { font-weight: 700; margin-bottom: 6px; color: #aaa; }
+    .sd-player .sd-name  { font-weight: 700; margin-bottom: 6px; color: var(--text-muted); }
     .sd-player .sd-hand  { display: flex; justify-content: center; gap: 4px; margin-bottom: 6px; }
-    .sd-player .sd-rank  { font-size: .78rem; color: #404040; }
+    .sd-player .sd-rank  { font-size: .78rem; color: #888; }
     .sd-player .sd-award { color: var(--gold); font-weight: 700; margin-top: 4px; }
+    /* 抓牌界面小牌：大小和字体尺寸强制覆盖 */
+    .sd-player .sd-hand .card {
+      width: 38px !important; height: 54px !important;
+      min-width: unset; max-width: unset;
+      border-radius: 5px;
+      gap: 1px;
+    }
+    .sd-player .sd-hand .card .rank { font-size: .72rem !important; line-height: 1; }
+    .sd-player .sd-hand .card .suit { font-size: .82rem !important; line-height: 1; }
 
     /* ── Mobile ───────────────────────────────────── */
     @media (max-width: 680px) {
@@ -670,7 +679,8 @@
     body.light .sd-player { background: #d8d8d8; border-color: #c0c0c0; }
     body.light .sd-player.winner { background: #f0e8be; border-color: #b89830; }
     body.light .sd-player .sd-name { color: #222; }
-    body.light .sd-player .sd-rank { color: #707070; }
+    body.light .sd-player .sd-rank { color: #606060; }
+    body.light .sd-player.winner .sd-name { color: #1a1a1a; }
   </style>
 </head>
 <body>
