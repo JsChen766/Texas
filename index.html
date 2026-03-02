@@ -49,37 +49,138 @@
       flex-direction: column;
     }
 
-    /* ── Login overlay ────────────────────────────── */
+    /* ── Login overlay — Book Preface Style ─────── */
     #login-screen {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.96);
-      backdrop-filter: blur(12px);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 12px; z-index: 200;
+      position: fixed; inset: 0; z-index: 200;
+      background: #0c0b09;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px;
+      overflow-y: auto;
     }
-    #login-screen h2 {
-      font-size: 1.5rem; font-weight: 700;
-      color: var(--text); letter-spacing: 1px;
+    #login-screen::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
     }
-    #login-screen input {
-      padding: 11px 16px; border-radius: var(--radius-md);
-      border: 1px solid #2a2a2a;
-      background: #161616;
-      color: var(--text); font-size: .95rem; width: 260px;
-      outline: none; transition: border-color .2s;
+    .ls-page {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 400px;
+      border: 1px solid rgba(180,150,80,.16);
+      border-top: 2px solid rgba(180,150,80,.32);
+      border-bottom: 2px solid rgba(180,150,80,.32);
+      padding: clamp(28px,6vw,48px) clamp(22px,8vw,44px) clamp(24px,5vw,38px);
+      background: linear-gradient(160deg, #161410 0%, #0f0e0c 100%);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.7), 0 28px 70px rgba(0,0,0,.85);
+      animation: ls-fadein .65s cubic-bezier(.22,.8,.3,1) both;
     }
-    #login-screen input:focus { border-color: var(--accent); }
+    @keyframes ls-fadein {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .ls-crown {
+      text-align: center; margin-bottom: 26px;
+      font-size: .6rem; letter-spacing: .55em;
+      color: rgba(180,150,80,.35);
+      font-family: Georgia, serif; text-transform: uppercase;
+    }
+    .ls-suit-row {
+      display: flex; justify-content: center; gap: 18px; margin-bottom: 18px;
+    }
+    .ls-suit {
+      font-size: 1.5rem; line-height: 1;
+      font-family: Georgia, serif;
+      animation: ls-suit-breathe 3.6s ease-in-out infinite alternate;
+    }
+    .ls-suit:nth-child(1) { color: #a03030; opacity: .22; animation-delay: 0s; }
+    .ls-suit:nth-child(2) { color: #c8bca0; opacity: .20; animation-delay: .9s; }
+    .ls-suit:nth-child(3) { color: #a03030; opacity: .22; animation-delay: 1.8s; }
+    .ls-suit:nth-child(4) { color: #c8bca0; opacity: .20; animation-delay: 2.7s; }
+    @keyframes ls-suit-breathe {
+      from { opacity: .12; } to { opacity: .32; }
+    }
+    .ls-title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(1.25rem, 5vw, 1.75rem);
+      font-weight: 400; letter-spacing: .2em;
+      text-align: center; color: #d4c9b0;
+      margin-bottom: 7px; text-transform: uppercase;
+    }
+    .ls-subtitle {
+      text-align: center; font-size: .72rem;
+      letter-spacing: .55em; font-weight: 300;
+      color: rgba(180,150,80,.55); margin-bottom: 0;
+    }
+    .ls-divider {
+      display: flex; align-items: center;
+      margin: 20px 0;
+    }
+    .ls-divider::before, .ls-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(180,150,80,.22), transparent);
+    }
+    .ls-divider span {
+      padding: 0 14px; font-size: .95rem;
+      color: rgba(180,150,80,.35); font-family: Georgia, serif;
+    }
+    .ls-notices {
+      display: flex; flex-direction: column; gap: 9px; margin: 2px 0;
+    }
+    .ls-notice {
+      display: flex; align-items: flex-start; gap: 9px;
+      font-size: .7rem; line-height: 1.6;
+      color: rgba(200,185,155,.45);
+      font-family: Georgia, 'Times New Roman', serif; font-style: italic;
+    }
+    .ls-notice-icon {
+      flex-shrink: 0; margin-top: 2px;
+      font-style: normal; font-size: .62rem; opacity: .7;
+    }
+    .ls-notice.warn { color: rgba(200,158,55,.6); }
+    .ls-notice.warn .ls-notice-icon { opacity: 1; color: #c8a030; }
+    .ls-form {
+      display: flex; flex-direction: column; gap: 10px; margin-top: 2px;
+    }
+    .ls-form-label {
+      font-size: .6rem; letter-spacing: .35em;
+      color: rgba(180,150,80,.4); text-align: center;
+      font-family: Georgia, serif; text-transform: uppercase;
+    }
+    #name-input {
+      padding: 11px 14px;
+      border: none; border-bottom: 1px solid rgba(180,150,80,.35);
+      background: rgba(255,255,255,.03);
+      color: #d4c9b0; font-size: .9rem;
+      font-family: Georgia, 'Times New Roman', serif; letter-spacing: .08em;
+      width: 100%; outline: none; border-radius: 0;
+      transition: border-color .25s, background .25s;
+      text-align: center;
+    }
+    #name-input::placeholder { color: rgba(180,150,80,.28); letter-spacing: .12em; }
+    #name-input:focus {
+      border-bottom-color: rgba(180,150,80,.7);
+      background: rgba(255,255,255,.05);
+    }
     #btn-enter {
-      padding: 11px 0; border-radius: var(--radius-md);
-      background: var(--accent); border: none; color: #fff;
-      font-size: .95rem; font-weight: 600; cursor: pointer;
-      width: 260px; transition: background .2s, transform .1s;
-      letter-spacing: .5px;
+      margin-top: 4px; padding: 12px 0;
+      background: transparent;
+      border: 1px solid rgba(180,150,80,.3);
+      color: rgba(180,150,80,.7);
+      font-size: .72rem; letter-spacing: .4em;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: 400; cursor: pointer; width: 100%;
+      border-radius: 0;
+      transition: background .2s, color .2s, border-color .2s;
+      text-transform: uppercase;
     }
-    #btn-enter:hover  { background: var(--accent-dark); }
-    #btn-enter:active { transform: scale(.97); }
-    #btn-enter:disabled { background: #1a1a1a; color: var(--text-muted); cursor: default; }
+    #btn-enter:hover  { background: rgba(180,150,80,.1); border-color: rgba(180,150,80,.6); color: #d4b860; }
+    #btn-enter:active { transform: scale(.98); }
+    #btn-enter:disabled { opacity: .3; cursor: default; pointer-events: none; }
+    .ls-colophon {
+      margin-top: 26px; text-align: center;
+      font-size: .58rem; letter-spacing: .28em;
+      color: rgba(180,150,80,.18);
+      font-family: Georgia, serif; text-transform: uppercase;
+    }
 
     /* ── App header ───────────────────────────────── */
     #app-header {
@@ -747,9 +848,45 @@
       from { box-shadow: inset 3px 0 0 #8a6820; }
       to   { box-shadow: inset 4px 0 20px rgba(120,88,20,.2); }
     }
-    body.light #login-screen { background: rgba(240,240,240,.97); }
-    body.light #login-screen h2 { color: #141414; }
-    body.light #login-screen input { background: #e4e4e4; border-color: #c0c0c0; color: #141414; }
+    body.light #login-screen { background: #ede8de; }
+    body.light .ls-page {
+      background: linear-gradient(160deg, #faf6ee 0%, #f3ede0 100%);
+      border-color: rgba(80,52,10,.14);
+      border-top-color: rgba(100,65,10,.28);
+      border-bottom-color: rgba(100,65,10,.28);
+      box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 24px 60px rgba(0,0,0,.1);
+    }
+    body.light .ls-crown { color: rgba(80,55,10,.38); }
+    body.light .ls-suit:nth-child(1),
+    body.light .ls-suit:nth-child(3) { color: #9a1c1c; }
+    body.light .ls-suit:nth-child(2),
+    body.light .ls-suit:nth-child(4) { color: #1a1612; }
+    body.light .ls-title { color: #1a1610; }
+    body.light .ls-subtitle { color: rgba(100,65,10,.58); }
+    body.light .ls-divider::before,
+    body.light .ls-divider::after { background: linear-gradient(to right, transparent, rgba(100,65,10,.2), transparent); }
+    body.light .ls-divider span { color: rgba(100,65,10,.38); }
+    body.light .ls-notice { color: rgba(55,40,15,.5); }
+    body.light .ls-notice.warn { color: rgba(110,65,0,.65); }
+    body.light .ls-notice.warn .ls-notice-icon { color: #7a4800; }
+    body.light .ls-form-label { color: rgba(100,65,10,.45); }
+    body.light #name-input {
+      border-bottom-color: rgba(100,65,10,.38);
+      background: rgba(0,0,0,.025);
+      color: #1a1610;
+    }
+    body.light #name-input::placeholder { color: rgba(100,65,10,.3); }
+    body.light #name-input:focus { border-bottom-color: rgba(100,65,10,.65); background: rgba(0,0,0,.04); }
+    body.light #btn-enter {
+      border-color: rgba(100,65,10,.28);
+      color: rgba(100,65,10,.7);
+    }
+    body.light #btn-enter:hover {
+      background: rgba(100,65,10,.07);
+      border-color: rgba(100,65,10,.55);
+      color: #6b3e00;
+    }
+    body.light .ls-colophon { color: rgba(100,65,10,.18); }
     body.light #showdown-overlay { background: rgba(240,240,240,.96); }
     body.light #showdown-overlay h2 { color: #444; }
     body.light .sd-player { background: #d8d8d8; border-color: #c0c0c0; }
@@ -761,19 +898,41 @@
 </head>
 <body>
 
-<!-- ══ Login Screen ══════════════════════════════ -->
+<!-- ══ Login Screen — Book Preface ═════════════ -->
 <div id="login-screen">
-  <h2>♠</h2>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6"><i class="fa-solid fa-triangle-exclamation" style="color:#c8a030"></i> 最好不要用微信浏览器打开</p>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">用外部浏览器打开</p>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6"><i class="fa-solid fa-triangle-exclamation" style="color:#c8a030"></i>退出重进仍然保留筹码等相关状态</p>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">（必须使用相同浏览器重进）</p>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">本网站仅供群友娱乐使用</p>
-  <p style="font-size:.75rem;opacity:.6;text-align:center;max-width:260px;line-height:1.6">请勿外传 请勿外传</p>
-  <p style="font-size:.8rem;opacity:.75;text-align:center">叠甲叠甲叠甲！</p>
-  <p style="opacity:.6;font-size:.85rem">请输入你的昵称加入房间</p>
-  <input id="name-input" type="text" maxlength="16" placeholder="你的昵称…" autocomplete="off" />
-  <button id="btn-enter">进入房间</button>
+  <div class="ls-page">
+    <p class="ls-crown">— Private Table —</p>
+    <div class="ls-suit-row">
+      <span class="ls-suit">♥</span>
+      <span class="ls-suit">♠</span>
+      <span class="ls-suit">♦</span>
+      <span class="ls-suit">♣</span>
+    </div>
+    <h1 class="ls-title">Texas Hold'em</h1>
+    <p class="ls-subtitle">德 州 扑 克</p>
+    <div class="ls-divider"><span>❧</span></div>
+    <div class="ls-notices">
+      <p class="ls-notice warn">
+        <span class="ls-notice-icon">⚑</span>
+        请使用外部浏览器打开，微信内浏览器体验不佳
+      </p>
+      <p class="ls-notice">
+        <span class="ls-notice-icon">◉</span>
+        退出重进仍保留筹码等状态，须使用同一浏览器
+      </p>
+      <p class="ls-notice">
+        <span class="ls-notice-icon">◉</span>
+        本网站仅供群友娱乐，请勿外传
+      </p>
+    </div>
+    <div class="ls-divider"><span>❧</span></div>
+    <div class="ls-form">
+      <p class="ls-form-label">Enter Your Name</p>
+      <input id="name-input" type="text" maxlength="16" placeholder="你的昵称…" autocomplete="off" />
+      <button id="btn-enter">进入房间</button>
+    </div>
+    <p class="ls-colophon">叠 甲 叠 甲 叠 甲</p>
+  </div>
 </div>
 <!-- ══ Battle Stats Modal ══════════════════════ -->
 <div id="battle-stats-backdrop">
