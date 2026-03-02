@@ -62,6 +62,15 @@
       position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
     }
+    /* ── Login bg: scattered card silhouettes ── */
+    #ls-bg {
+      position: absolute; inset: 0; z-index: 0;
+      pointer-events: none; overflow: hidden;
+      color: rgba(180,150,80,1);
+    }
+    #ls-bg svg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+    }
     .ls-page {
       position: relative; z-index: 1;
       width: 100%; max-width: 400px;
@@ -849,6 +858,7 @@
       to   { box-shadow: inset 4px 0 20px rgba(120,88,20,.2); }
     }
     body.light #login-screen { background: #ede8de; }
+    body.light #ls-bg { color: rgba(65,42,8,1); }
     body.light .ls-page {
       background: linear-gradient(160deg, #faf6ee 0%, #f3ede0 100%);
       border-color: rgba(80,52,10,.14);
@@ -900,6 +910,52 @@
 
 <!-- ══ Login Screen — Book Preface ═════════════ -->
 <div id="login-screen">
+  <!-- scattered card background -->
+  <div id="ls-bg" aria-hidden="true">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="pc" viewBox="0 0 800 800">
+          <g transform="translate(186.645555,622.000035) scale(0.054185,-0.054185)" fill="currentColor" stroke="none">
+            <path d="M1277 7968 c-166 -16 -316 -140 -373 -308 -18 -53 -19 -165 -19 -3555 0 -3271 1 -3504 17 -3555 43 -137 144 -249 275 -302 l58 -23 2660 -3 c1890 -2 2679 0 2725 8 36 6 89 22 118 35 65 30 160 119 195 183 61 113 57 -165 57 3652 0 2863 -3 3495 -14 3541 -28 120 -117 229 -235 287 l-75 37 -155 3 c-359 6 -5172 6 -5234 0z m5378 -202 c55 -25 110 -81 131 -132 21 -51 21 -7018 0 -7069 -26 -61 -66 -104 -129 -135 l-60 -30 -2652 0 c-2921 0 -2698 -5 -2778 61 -21 17 -50 54 -65 83 l-27 51 -3 3475 c-2 1911 0 3494 3 3517 11 74 96 170 172 193 16 5 1227 9 2693 9 l2665 1 50 -24z"/>
+            <path d="M1535 7369 c-45 -22 -45 -21 -45 -610 0 -494 2 -565 15 -586 32 -49 109 -52 145 -5 19 24 20 43 20 579 0 480 -2 558 -15 584 -23 44 -75 60 -120 38z"/>
+            <path d="M2173 7374 c-26 -11 -419 -457 -445 -507 -22 -39 -23 -83 -3 -121 24 -45 429 -550 474 -590 34 -31 89 -25 123 13 16 17 28 42 28 55 0 29 -6 37 -242 329 -109 134 -198 248 -198 254 0 5 12 23 28 40 15 16 77 85 137 153 61 68 138 155 173 193 72 80 81 119 37 162 -23 24 -77 33 -112 19z"/>
+            <path d="M5679 7337 c-25 -7 -58 -23 -75 -34 -52 -38 -391 -387 -410 -423 -29 -54 -27 -200 3 -257 31 -57 85 -108 152 -140 48 -24 67 -27 150 -28 61 0 122 7 167 18 67 17 74 18 135 1 92 -24 239 -24 309 0 80 28 163 113 186 191 20 72 15 157 -15 218 -31 64 -346 396 -407 429 -60 33 -134 42 -195 25z m246 -324 c199 -207 200 -209 199 -260 -1 -51 -22 -78 -79 -104 -52 -24 -83 -24 -211 3 -103 20 -108 21 -177 4 -40 -9 -96 -19 -124 -23 -103 -12 -183 43 -183 127 0 31 16 50 183 217 165 166 186 183 217 183 30 0 47 -14 175 -147z"/>
+            <path d="M3962 6483 c-48 -23 -67 -53 -103 -161 -72 -219 -120 -315 -203 -400 -135 -141 -276 -101 -484 140 -41 48 -89 93 -106 100 -72 29 -148 2 -180 -66 -14 -30 -16 -104 -16 -665 l0 -631 -35 -48 c-43 -60 -99 -178 -122 -257 -15 -52 -18 -120 -21 -527 l-3 -467 -47 -6 c-180 -23 -276 -53 -374 -119 -140 -92 -247 -256 -268 -409 -24 -170 44 -361 175 -492 165 -165 364 -225 710 -212 209 7 344 39 510 118 218 103 424 295 541 501 87 153 151 349 173 528 6 47 11 266 11 491 0 231 4 429 10 459 67 354 569 587 916 426 81 -38 128 -87 163 -169 37 -89 265 -548 298 -601 16 -24 21 -42 15 -48 -16 -16 -82 -27 -207 -34 -66 -4 -131 -13 -145 -20 -48 -24 -204 -189 -257 -271 -61 -95 -79 -109 -157 -125 -52 -11 -61 -10 -94 7 -48 26 -62 56 -62 138 0 53 -4 71 -20 87 -43 43 -118 33 -145 -21 -19 -36 -19 -141 0 -206 41 -138 201 -218 367 -184 72 15 175 77 213 128 17 23 57 77 89 122 32 44 63 81 67 81 4 0 6 -17 4 -37 -2 -21 -4 -148 -5 -283 l0 -245 -76 -49 c-151 -98 -378 -199 -486 -215 -35 -5 -120 -12 -191 -16 -120 -7 -128 -8 -147 -32 -44 -56 -12 -136 58 -148 43 -7 280 11 355 27 190 40 623 273 662 355 12 25 15 84 15 320 l0 288 45 59 c53 71 52 70 140 91 90 21 129 46 155 101 34 69 25 118 -46 249 -32 61 -76 146 -96 190 -21 45 -62 126 -92 181 -29 56 -68 139 -87 185 -28 73 -43 94 -106 156 l-72 73 -3 572 c-3 637 -1 616 -71 658 -32 20 -95 25 -130 12 -10 -4 -78 -67 -152 -140 -143 -142 -205 -182 -279 -182 -88 0 -189 85 -258 216 -20 38 -60 137 -88 219 -28 82 -57 159 -65 171 -32 50 -130 69 -193 37z m142 -428 c65 -154 186 -299 296 -356 61 -32 71 -34 165 -34 87 0 107 3 155 26 68 32 146 91 228 171 l62 61 0 -428 c0 -403 -1 -427 -17 -420 -10 4 -51 16 -91 27 -70 18 -109 19 -790 16 -701 -4 -719 -4 -787 -25 -83 -26 -196 -75 -235 -103 -15 -11 -31 -20 -34 -20 -3 0 -6 215 -6 477 l0 477 56 -58 c75 -76 145 -131 218 -169 57 -30 68 -32 166 -32 99 0 109 2 172 33 73 36 165 125 226 221 36 56 104 204 116 253 3 15 11 40 17 55 10 27 12 25 38 -52 16 -44 36 -98 45 -120z m296 -1120 c0 -2 -19 -14 -42 -26 -184 -93 -318 -243 -386 -431 l-27 -73 -6 -490 c-6 -527 -8 -547 -65 -722 -113 -346 -392 -620 -725 -713 -158 -43 -465 -51 -606 -14 -204 53 -350 217 -361 405 -7 124 31 213 135 310 87 82 194 121 370 135 89 7 130 25 160 71 17 25 18 67 23 523 6 475 7 498 28 560 33 99 89 188 168 265 92 90 194 148 315 180 93 24 100 24 557 25 254 0 462 -2 462 -5z"/>
+            <path d="M5628 6343 c-24 -3 -43 -12 -53 -26 -20 -28 -19 -91 1 -122 16 -25 19 -25 154 -25 152 0 169 6 171 58 4 110 -10 123 -140 120 -53 -1 -113 -3 -133 -5z"/>
+            <path d="M4651 4458 c-139 -73 -88 -278 70 -278 87 0 154 74 146 159 -12 109 -121 169 -216 119z"/>
+            <path d="M5425 2144 c-16 -17 -25 -39 -25 -60 0 -38 26 -71 235 -299 164 -178 235 -262 235 -277 0 -7 -99 -111 -220 -233 -202 -204 -220 -224 -220 -256 0 -63 76 -112 129 -84 29 15 421 409 463 465 40 54 53 115 33 169 -17 50 -47 84 -476 549 -43 46 -53 52 -89 52 -31 0 -47 -6 -65 -26z"/>
+            <path d="M6116 2139 l-26 -31 0 -562 c0 -549 1 -564 20 -589 11 -14 33 -28 49 -32 34 -7 85 15 101 44 6 13 10 217 10 586 l0 566 -25 24 c-37 38 -95 35 -129 -6z"/>
+            <path d="M1885 2100 c-11 -13 -18 -36 -18 -71 -1 -79 16 -89 159 -89 105 0 114 1 128 22 9 12 16 43 16 68 0 25 -7 56 -16 68 -14 21 -23 22 -133 22 -104 0 -120 -2 -136 -20z"/>
+            <path d="M1685 1805 c-88 -35 -156 -111 -180 -199 -39 -143 -6 -213 198 -420 163 -165 216 -203 295 -213 88 -10 140 23 322 203 93 92 168 174 183 202 57 106 56 222 -3 315 -76 120 -228 164 -406 118 -68 -18 -73 -18 -140 0 -99 26 -195 24 -269 -6z m258 -178 l74 -24 78 24 c169 50 265 14 265 -99 0 -42 -6 -54 -48 -105 -71 -85 -259 -263 -280 -264 -9 -1 -24 -1 -32 1 -23 2 -289 270 -312 314 -25 48 -18 93 20 129 55 53 121 60 235 24z"/>
+          </g>
+        </symbol>
+      </defs>
+      <g transform="translate(75,75) rotate(-22) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(270,50) rotate(14) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(510,105) rotate(-8) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(755,62) rotate(19) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1005,88) rotate(-14) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1255,68) rotate(7) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1415,130) rotate(-19) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(155,300) rotate(17) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(415,355) rotate(-21) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(680,285) rotate(11) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(950,340) rotate(-8) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1210,300) rotate(23) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1400,415) rotate(-5) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(50,525) rotate(-17) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(310,585) rotate(13) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(595,510) rotate(-24) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(875,555) rotate(9) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1140,520) rotate(-16) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1385,595) rotate(6) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(220,780) rotate(-20) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(530,825) rotate(16) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(805,795) rotate(-11) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1085,840) rotate(18) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1325,785) rotate(-8) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+    </svg>
+  </div>
   <div class="ls-page">
     <p class="ls-crown">— Private Table —</p>
     <div class="ls-suit-row">
