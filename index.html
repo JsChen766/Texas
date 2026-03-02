@@ -10,16 +10,16 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #0b0b0b;
-      --sidebar:     #111111;
-      --panel:       #181818;
-      --panel-inner: #0e0e0e;
-      --hover:       #1c1c1c;
-      --active:      #1a3260;
-      --accent:      #4a7dd4;
-      --accent-dark: #2d5eb0;
-      --header-bg:   #0d0d0d;
-      --divider:     rgba(255,255,255,0.08);
+      --bg:          #0c0b09;
+      --sidebar:     #120f0c;
+      --panel:       #171410;
+      --panel-inner: #100e0b;
+      --hover:       #1d1a12;
+      --active:      #261f0c;
+      --accent:      #b08840;
+      --accent-dark: #8a6220;
+      --header-bg:   #0f0d0a;
+      --divider:     rgba(180,150,80,0.1);
       --text:        #e4e4e4;
       --text-muted:  #707070;
       --gold:        #c49a38;
@@ -424,14 +424,14 @@
     .player-row:hover        { background: var(--hover); }
     .player-row.active-turn  { border-left-color: var(--gold); background: rgba(184,138,40,.06); }
     .player-row.folded-player { opacity: .3; }
-    .player-row.self         { border-left-color: var(--accent); background: rgba(74,125,212,.07); }
+    .player-row.self         { border-left-color: var(--accent); background: rgba(176,136,64,.08); }
 
     .player-avatar {
       width: 32px; height: 32px; border-radius: 3px;
-      background: #1a2840;
+      background: #1c1708;
       display: flex; align-items: center; justify-content: center;
       font-size: .82rem; font-weight: 700;
-      flex-shrink: 0; color: #6888aa;
+      flex-shrink: 0; color: #9a8050;
     }
     .player-info  { flex: 1; min-width: 0; }
     .player-name  { font-size: .88rem; font-weight: 600; display:flex; align-items:center; gap:3px; flex-wrap:wrap; min-width:0; overflow:hidden; color: #d8d8d8; }
@@ -638,7 +638,7 @@
     #btn-call    { background: #081e16; color: #58d8b0; border: 1px solid #143028; }
     #btn-raise   { background: #251a04; color: #e8b050; border: 1px solid #3a2808; }
     #btn-allin   { background: #1c0e34; color: #c890f8; border: 1px solid #2e1850; }
-    #btn-borrow  { background: #0a1a34; color: #78b8e8; border: 1px solid #183050; }
+    #btn-borrow  { background: #1e1604; color: #c8a040; border: 1px solid #3a2c08; }
     #btn-dissolve{ background: #1c1810; color: #908060; border: 1px solid #2e2818; }
     #btn-dissolve.voted { background: #2e1010; color: #d86060; border-color: #481818; }
     #btn-start.voted { background: #0e3020; color: #60e060; animation: pulse .8s infinite alternate; }
@@ -784,16 +784,16 @@
 
     /* ── Light theme ─────────────────────────────── */
     body.light {
-      --bg:          #f0f0f0;
-      --sidebar:     #e4e4e4;
-      --panel:       #d8d8d8;
-      --panel-inner: #ebebeb;
-      --hover:       #d0d0d0;
-      --active:      #a8c4e8;
-      --accent:      #2a5cb0;
-      --accent-dark: #1e4490;
-      --header-bg:   #e8e8e8;
-      --divider:     rgba(0,0,0,0.1);
+      --bg:          #f0ece3;
+      --sidebar:     #e8e3d8;
+      --panel:       #ddd8cc;
+      --panel-inner: #eae6dc;
+      --hover:       #cec9b8;
+      --active:      #ddd4a8;
+      --accent:      #7a5808;
+      --accent-dark: #5a3e04;
+      --header-bg:   #ede8df;
+      --divider:     rgba(80,52,8,0.12);
       --text:        #141414;
       --text-muted:  #606060;
       --gold:        #7a5808;
@@ -813,8 +813,9 @@
     body.light .player-chips { color: var(--gold); }
     body.light .player-bet { color: #2060a0; }
     body.light .player-debt { color: #902020; }
-    body.light .player-avatar { background: #b8ccdf; color: #2a508a; }
+    body.light .player-avatar { background: #e2d8c0; color: #7a5808; }
     body.light .player-row:hover { background: var(--hover); }
+    body.light .player-row.self   { background: rgba(120,88,8,.07); }
     body.light .badge-D        { background: #ffd5d5; color: #a01010; }
     body.light .badge-SB       { background: #d0e0f8; color: #1a4a90; }
     body.light .badge-BB       { background: #e0d0f8; color: #5020a0; }
@@ -848,7 +849,7 @@
     body.light #btn-call     { background: #c8f0e4; color: #083028; border-color: #88d8c0; }
     body.light #btn-raise    { background: #f0e4c0; color: #482800; border-color: #d8c078; }
     body.light #btn-allin    { background: #e8d0f8; color: #300858; border-color: #c0a0e0; }
-    body.light #btn-borrow   { background: #d0e4f8; color: #082040; border-color: #90c4e8; }
+    body.light #btn-borrow   { background: #f0e8c8; color: #4a3004; border-color: #c8a848; }
     body.light #btn-dissolve { background: #f0e8d0; color: #3a2a10; border-color: #d8c890; }
     body.light #btn-dissolve.voted { background: #f0d0d0; color: #5a1010; border-color: #d09090; }
     body.light #btn-start.voted { background: #c8f0d4; color: #0a3818; }
@@ -930,30 +931,30 @@
           </g>
         </symbol>
       </defs>
-      <g transform="translate(75,75) rotate(-22) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(270,50) rotate(14) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(510,105) rotate(-8) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(755,62) rotate(19) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1005,88) rotate(-14) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1255,68) rotate(7) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1415,130) rotate(-19) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(155,300) rotate(17) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(415,355) rotate(-21) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(680,285) rotate(11) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(950,340) rotate(-8) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1210,300) rotate(23) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1400,415) rotate(-5) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(50,525) rotate(-17) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(310,585) rotate(13) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(595,510) rotate(-24) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(875,555) rotate(9) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1140,520) rotate(-16) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1385,595) rotate(6) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(220,780) rotate(-20) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(530,825) rotate(16) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(805,795) rotate(-11) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1085,840) rotate(18) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
-      <g transform="translate(1325,785) rotate(-8) scale(0.1125) translate(-400,-400)" opacity="0.065"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(75,75) rotate(-22) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(270,50) rotate(14) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(510,105) rotate(-8) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(755,62) rotate(19) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1005,88) rotate(-14) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1255,68) rotate(7) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1415,130) rotate(-19) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(155,300) rotate(17) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(415,355) rotate(-21) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(680,285) rotate(11) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(950,340) rotate(-8) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1210,300) rotate(23) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1400,415) rotate(-5) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(50,525) rotate(-17) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(310,585) rotate(13) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(595,510) rotate(-24) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(875,555) rotate(9) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1140,520) rotate(-16) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1385,595) rotate(6) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(220,780) rotate(-20) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(530,825) rotate(16) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(805,795) rotate(-11) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1085,840) rotate(18) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
+      <g transform="translate(1325,785) rotate(-8) scale(0.175) translate(-400,-400)" opacity="0.09"><use href="#pc" width="800" height="800"/></g>
     </svg>
   </div>
   <div class="ls-page">
