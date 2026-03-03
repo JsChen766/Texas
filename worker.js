@@ -548,16 +548,16 @@ export class PokerRoom {
     this.startVotes       = new Set();
     this.kickVotes        = new Map(); // targetId → Set<voterId>
     this.chatHistory      = [];        // 聊天记录（内存，重启清零）
-    this.chatHistoryLimit = 20;        // ← 可在此处调整最多保留多少条聊天历史
 
     // 可动态修改的配置
     this.config = {
-      smallBlind:    10,
-      bigBlind:      20,
-      initialChips:  1000,
-      maxSeats:      10,
-      disconnectTtl: 5 * 60 * 1000,
-      showdownDelay: 2000,
+      smallBlind:       10,
+      bigBlind:         20,
+      initialChips:     1000,
+      maxSeats:         10,
+      disconnectTtl:    5 * 60 * 1000,
+      showdownDelay:    2000,
+      chatHistoryLimit: 50,            // ← 聊天记录最多保留条数，可通过 /admin/config 修改
     };
 
     // 管理员鉴权（token 仅内存保存，重启失效）
@@ -676,7 +676,7 @@ export class PokerRoom {
 
         // 更新配置
         if (p === '/admin/config') {
-          const allowed = ['smallBlind','bigBlind','initialChips','maxSeats','disconnectTtl','showdownDelay'];
+          const allowed = ['smallBlind','bigBlind','initialChips','maxSeats','disconnectTtl','showdownDelay','chatHistoryLimit'];
           for (const k of allowed) {
             if (body[k] !== undefined && Number.isFinite(+body[k]) && +body[k] > 0) {
               this.config[k] = +body[k];
@@ -753,6 +753,7 @@ export class PokerRoom {
           this._broadcast({ type: 'dissolve', message: '管理员强制解散了房间' });
           this.players = []; this.audience = [];
           this.dissolveVotes.clear(); this.kickVotes.clear();
+          this.chatHistory = [];       // 解散时清空聊天记录
           this.persistedPlayers = {};
           await this.state.storage.delete('persistedPlayers').catch(() => {});
           const gs = this.gameState;
@@ -1425,6 +1426,7 @@ export class PokerRoom {
             this._broadcast({type:'dissolve',message:'超过半数同意，房间已解散！'});
             this.players=[]; this.audience=[];
             this.dissolveVotes.clear(); this.kickVotes.clear();
+            this.chatHistory=[];       // 解散时清空聊天记录
             this.persistedPlayers={};
             this.state.storage.delete('persistedPlayers').catch(()=>{});
             const gs=this.gameState;
@@ -1475,7 +1477,7 @@ export class PokerRoom {
         if (!chatSender) break;
         const chatEntry = { name: chatSender.name, text: chatText, ts: Date.now() };
         this.chatHistory.push(chatEntry);
-        if (this.chatHistory.length > this.chatHistoryLimit) this.chatHistory.shift();
+        if (this.chatHistory.length > this.config.chatHistoryLimit) this.chatHistory.shift();
         this._broadcast({ type: 'chat', ...chatEntry });
         break;
       }
