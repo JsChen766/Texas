@@ -698,11 +698,11 @@
       to   { opacity: .4; }
     }
     body.my-turn #game-area {
-      animation: action-glow 0.6s ease-in-out infinite alternate;
+      animation: action-glow 1.4s ease-in-out infinite alternate;
     }
     @keyframes action-glow {
-      from { filter: brightness(0.72); }
-      to   { filter: brightness(1.26); }
+      from { filter: brightness(0.84); }
+      to   { filter: brightness(1.00); }
     }
 
     /* ── Chat ─────────────────────────────────────── */
@@ -955,10 +955,10 @@
     body.light #btn-dissolve { background: #f0e8d0; color: #3a2a10; border-color: #d8c890; }
     body.light #btn-dissolve.voted { background: #f0d0d0; color: #5a1010; border-color: #d09090; }
     body.light #btn-start.voted { background: #c8f0d4; color: #0a3818; }
-    body.light.my-turn #game-area { animation: action-glow-light 0.6s ease-in-out infinite alternate; }
+    body.light.my-turn #game-area { animation: action-glow-light 1.4s ease-in-out infinite alternate; }
     @keyframes action-glow-light {
-      from { filter: brightness(0.80); }
-      to   { filter: brightness(1.18); }
+      from { filter: brightness(0.88); }
+      to   { filter: brightness(1.00); }
     }
     /* 聊天 - 亮色主题 */
     body.light #chat-panel { background: rgba(240,236,226,.93); }
@@ -1106,7 +1106,7 @@
     <div class="bsm-header">
       <span class="bsm-title"><i class="fa-solid fa-trophy" style="margin-right:7px;color:#f8c740"></i>本局战况</span>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button id="btn-bsm-capture" class="bsm-capture-btn" title="手机保存图片 / 电脑复制图片"><i class="fa-solid fa-image"></i></button>
+        <button id="btn-bsm-capture" class="bsm-capture-btn" title="复制战况文本"><i class="fa-solid fa-copy"></i></button>
         <button class="bsm-close" id="btn-bsm-close"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
@@ -1228,7 +1228,6 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
 <script src="main.js"></script>
 <script>
   (function(){
