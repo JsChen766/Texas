@@ -342,6 +342,25 @@
       line-height: 1;
     }
     .bsm-close:hover { background: var(--hover); }
+    /* 截图按鈕 */
+    .bsm-capture-btn {
+      background: none; border: 1px solid var(--divider);
+      color: var(--gold); cursor: pointer;
+      font-size: .82rem; padding: 4px 11px;
+      border-radius: 7px; line-height: 1;
+      transition: background .15s, color .15s;
+    }
+    .bsm-capture-btn:hover { background: var(--hover); }
+    /* 战况内联 toast */
+    #bsm-toast {
+      display: none; position: sticky; bottom: 10px;
+      margin: 6px auto 0; width: fit-content;
+      background: rgba(22,22,22,.88); color: #e8e8e8;
+      padding: 6px 20px; border-radius: 20px; font-size: .78rem;
+      pointer-events: none; text-align: center; z-index: 2;
+    }
+    #bsm-toast.show { display: block; }
+    body.light #bsm-toast { background: rgba(40,40,40,.82); }
     #battle-stats-body {
       flex: 1; overflow-y: auto; padding: 10px 12px;
       scrollbar-width: thin;
@@ -679,11 +698,11 @@
       to   { opacity: .4; }
     }
     body.my-turn #game-area {
-      animation: action-glow 0.65s ease-in-out infinite alternate;
+      animation: action-glow 0.6s ease-in-out infinite alternate;
     }
     @keyframes action-glow {
-      from { box-shadow: inset 0 0 3px rgba(180,138,40,.18); filter: brightness(0.94); }
-      to   { box-shadow: inset 0 0 0 2px rgba(218,172,52,.92), 0 0 32px rgba(184,138,40,.14); filter: brightness(1.08); }
+      from { filter: brightness(0.72); }
+      to   { filter: brightness(1.26); }
     }
 
     /* ── Chat ─────────────────────────────────────── */
@@ -936,10 +955,10 @@
     body.light #btn-dissolve { background: #f0e8d0; color: #3a2a10; border-color: #d8c890; }
     body.light #btn-dissolve.voted { background: #f0d0d0; color: #5a1010; border-color: #d09090; }
     body.light #btn-start.voted { background: #c8f0d4; color: #0a3818; }
-    body.light.my-turn #game-area { animation: action-glow-light 0.65s ease-in-out infinite alternate; }
+    body.light.my-turn #game-area { animation: action-glow-light 0.6s ease-in-out infinite alternate; }
     @keyframes action-glow-light {
-      from { box-shadow: inset 0 0 3px rgba(120,88,20,.2); filter: brightness(0.96); }
-      to   { box-shadow: inset 0 0 0 2px rgba(155,112,25,.88), 0 0 22px rgba(120,88,20,.12); filter: brightness(1.06); }
+      from { filter: brightness(0.80); }
+      to   { filter: brightness(1.18); }
     }
     /* 聊天 - 亮色主题 */
     body.light #chat-panel { background: rgba(240,236,226,.93); }
@@ -1086,11 +1105,15 @@
   <div id="battle-stats-modal">
     <div class="bsm-header">
       <span class="bsm-title"><i class="fa-solid fa-trophy" style="margin-right:7px;color:#f8c740"></i>本局战况</span>
-      <button class="bsm-close" id="btn-bsm-close"><i class="fa-solid fa-xmark"></i></button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button id="btn-bsm-capture" class="bsm-capture-btn" title="手机保存图片 / 电脑复制图片"><i class="fa-solid fa-image"></i></button>
+        <button class="bsm-close" id="btn-bsm-close"><i class="fa-solid fa-xmark"></i></button>
+      </div>
     </div>
     <div id="battle-stats-body">
       <div class="bsm-empty">暂无战况数据，快开局吧！</div>
     </div>
+    <div id="bsm-toast"></div>
   </div>
 </div>
 <!-- ══ Showdown Overlay ═══════════════════════════ -->
@@ -1205,6 +1228,7 @@
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
 <script src="main.js"></script>
 <script>
   (function(){
