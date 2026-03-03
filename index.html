@@ -679,11 +679,91 @@
       to   { opacity: .4; }
     }
     body.my-turn #game-area {
-      animation: action-glow 1s infinite alternate;
+      animation: action-glow 0.65s ease-in-out infinite alternate;
     }
     @keyframes action-glow {
-      from { box-shadow: inset 3px 0 0 #604a10; }
-      to   { box-shadow: inset 4px 0 20px rgba(184,138,40,.18); }
+      from { box-shadow: inset 0 0 3px rgba(180,138,40,.18); filter: brightness(0.94); }
+      to   { box-shadow: inset 0 0 0 2px rgba(218,172,52,.92), 0 0 32px rgba(184,138,40,.14); filter: brightness(1.08); }
+    }
+
+    /* ── Chat ─────────────────────────────────────── */
+    #chat-btn {
+      position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+      z-index: 90; display: none;
+      background: var(--panel); border: 1px solid var(--divider); border-right: none;
+      border-radius: 6px 0 0 6px; color: var(--gold);
+      padding: 14px 8px; cursor: pointer; font-size: 1.1rem; line-height: 1;
+      transition: background .2s, color .2s; font-weight: 700;
+    }
+    body.in-room #chat-btn { display: flex; align-items: center; justify-content: center; }
+    #chat-btn:hover { background: var(--hover); }
+    #chat-btn.has-new::after {
+      content: ''; position: absolute; top: 7px; right: 9px;
+      width: 7px; height: 7px; background: #e04040; border-radius: 50%;
+      animation: pulse .8s infinite alternate;
+    }
+    #chat-panel {
+      position: fixed; inset: 0; z-index: 80;
+      display: flex; flex-direction: column;
+      background: rgba(12,11,9,.88); backdrop-filter: blur(6px);
+      transform: translateX(100%);
+      transition: transform .3s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+    }
+    #chat-panel.open { transform: translateX(0); pointer-events: auto; }
+    #chat-header {
+      flex-shrink: 0; display: flex; align-items: center;
+      justify-content: space-between; padding: 14px 18px;
+      border-bottom: 1px solid var(--divider); background: rgba(0,0,0,.25);
+    }
+    #chat-title { font-size: .9rem; font-weight: 600; letter-spacing: .05em; color: var(--gold); }
+    #chat-close {
+      background: transparent; border: 1px solid var(--divider);
+      color: var(--text-muted); padding: 5px 16px; border-radius: var(--radius-md);
+      cursor: pointer; font-size: .78rem; letter-spacing: .05em;
+      transition: background .15s, color .15s;
+    }
+    #chat-close:hover { background: var(--hover); color: var(--text); }
+    #chat-messages {
+      flex: 1; overflow-y: auto; padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    #chat-messages::-webkit-scrollbar { width: 4px; }
+    #chat-messages::-webkit-scrollbar-thumb { background: var(--divider); border-radius: 2px; }
+    .chat-msg { display: flex; flex-direction: column; gap: 2px; max-width: min(78%, 520px); }
+    .chat-msg.self   { align-self: flex-end; }
+    .chat-msg.other  { align-self: flex-start; }
+    .chat-msg.system { align-self: center; max-width: 100%; }
+    .chat-msg-name { font-size: .6rem; color: var(--text-muted); padding: 0 5px; }
+    .chat-msg.self .chat-msg-name { text-align: right; }
+    .chat-msg-bubble {
+      padding: 7px 13px; border-radius: 10px;
+      font-size: .84rem; line-height: 1.55; word-break: break-word;
+    }
+    .chat-msg.self  .chat-msg-bubble { background: rgba(176,136,48,.2); border: 1px solid rgba(176,136,48,.32); color: #ddd0a8; }
+    .chat-msg.other .chat-msg-bubble { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); color: var(--text); }
+    .chat-msg.system .chat-msg-bubble { background: transparent; border: none; color: var(--text-muted); font-size: .72rem; font-style: italic; text-align: center; padding: 2px 8px; }
+    #chat-form {
+      flex-shrink: 0; display: flex; gap: 8px; align-items: center;
+      padding: 12px 16px; border-top: 1px solid var(--divider); background: rgba(0,0,0,.25);
+    }
+    #chat-input {
+      flex: 1; padding: 9px 12px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--divider);
+      border-radius: var(--radius-md); color: var(--text); font-size: .85rem;
+      outline: none; transition: border-color .2s;
+    }
+    #chat-input:focus { border-color: rgba(180,138,48,.5); }
+    #chat-input::placeholder { color: var(--text-muted); }
+    #chat-send {
+      padding: 9px 14px; background: rgba(176,136,64,.18); border: 1px solid rgba(176,136,64,.32);
+      border-radius: var(--radius-md); color: var(--gold); cursor: pointer; font-size: .85rem;
+      transition: background .15s; flex-shrink: 0;
+    }
+    #chat-send:hover { background: rgba(176,136,64,.32); }
+    @media (min-width: 600px) {
+      #chat-panel { left: auto; width: min(480px, 90vw); border-left: 1px solid var(--divider); }
     }
 
     /* ── Showdown overlay ─────────────────────────── */
@@ -853,11 +933,18 @@
     body.light #btn-dissolve { background: #f0e8d0; color: #3a2a10; border-color: #d8c890; }
     body.light #btn-dissolve.voted { background: #f0d0d0; color: #5a1010; border-color: #d09090; }
     body.light #btn-start.voted { background: #c8f0d4; color: #0a3818; }
-    body.light body.my-turn #game-area { animation: action-glow-light 1s infinite alternate; }
+    body.light.my-turn #game-area { animation: action-glow-light 0.65s ease-in-out infinite alternate; }
     @keyframes action-glow-light {
-      from { box-shadow: inset 3px 0 0 #8a6820; }
-      to   { box-shadow: inset 4px 0 20px rgba(120,88,20,.2); }
+      from { box-shadow: inset 0 0 3px rgba(120,88,20,.2); filter: brightness(0.96); }
+      to   { box-shadow: inset 0 0 0 2px rgba(155,112,25,.88), 0 0 22px rgba(120,88,20,.12); filter: brightness(1.06); }
     }
+    /* 聊天 - 亮色主题 */
+    body.light #chat-panel { background: rgba(240,236,226,.93); }
+    body.light #chat-header, body.light #chat-form { background: rgba(0,0,0,.04); }
+    body.light .chat-msg.self  .chat-msg-bubble { background: rgba(120,88,8,.1); border-color: rgba(120,88,8,.22); color: #3a2808; }
+    body.light .chat-msg.other .chat-msg-bubble { background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.1); color: var(--text); }
+    body.light #chat-input { background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.15); color: var(--text); }
+    body.light #chat-send  { background: rgba(120,88,8,.1); border-color: rgba(120,88,8,.28); color: var(--gold); }
     body.light #login-screen { background: #ede8de; }
     body.light #ls-bg { color: rgba(65,42,8,1); }
     body.light .ls-page {
@@ -1100,6 +1187,20 @@
     </div><!-- #game-area-inner -->
   </div><!-- #game-area -->
 </div><!-- #game-wrap -->
+
+<!-- ══ Chat ════════════════════════════════════ -->
+<button id="chat-btn" aria-label="聊天">&#x2039;</button>
+<div id="chat-panel" aria-hidden="true">
+  <div id="chat-header">
+    <span id="chat-title">&#x1F4AC; 聊天室</span>
+    <button id="chat-close">&#x203A; 收起</button>
+  </div>
+  <div id="chat-messages"></div>
+  <div id="chat-form">
+    <input id="chat-input" type="text" maxlength="120" placeholder="说点什么…" autocomplete="off" />
+    <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+</div>
 
 <script src="main.js"></script>
 <script>

@@ -547,6 +547,8 @@ export class PokerRoom {
     this.dissolveVotes    = new Set();
     this.startVotes       = new Set();
     this.kickVotes        = new Map(); // targetId → Set<voterId>
+    this.chatHistory      = [];        // 聊天记录（内存，重启清零）
+    this.chatHistoryLimit = 20;        // ← 可在此处调整最多保留多少条聊天历史
 
     // 可动态修改的配置
     this.config = {
@@ -1304,6 +1306,7 @@ export class PokerRoom {
             }
           }
           this._broadcastState();
+          this._sendTo(playerId, { type: 'chat_history', messages: [...this.chatHistory] });
           this._broadcast({ type:'message', message:`${inPlayers.name} 重新连线（玩家）` });
         } else if (inAudience) {
           inAudience.connected = true; inAudience.lastSeen = Date.now();
@@ -1315,6 +1318,7 @@ export class PokerRoom {
             }
           }
           this._broadcastState();
+          this._sendTo(playerId, { type: 'chat_history', messages: [...this.chatHistory] });
           this._broadcast({ type:'message', message:`${inAudience.name} 重新连线（观众）` });
         } else {
           const name = (msg.name||'').trim()||`游客${this.audience.length+1}`;
@@ -1327,6 +1331,7 @@ export class PokerRoom {
           }
           this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
           this._broadcastState();
+          this._sendTo(playerId, { type: 'chat_history', messages: [...this.chatHistory] });
           this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（🍓 ${chips}${debt>0?' · 赊 '+debt:''}）` });
         }
         break;
@@ -1460,6 +1465,18 @@ export class PokerRoom {
             this._moveToAudience(targetId, `🦶 ${target.name} 被投票移至观众席`);
           }
         }
+        break;
+      }
+
+      case 'chat': {
+        const chatText = (msg.text || '').trim().slice(0, 120);
+        if (!chatText) break;
+        const chatSender = this.players.find(p => p.id === playerId) || this.audience.find(p => p.id === playerId);
+        if (!chatSender) break;
+        const chatEntry = { name: chatSender.name, text: chatText, ts: Date.now() };
+        this.chatHistory.push(chatEntry);
+        if (this.chatHistory.length > this.chatHistoryLimit) this.chatHistory.shift();
+        this._broadcast({ type: 'chat', ...chatEntry });
         break;
       }
 
