@@ -533,7 +533,7 @@ document.getElementById('pi').addEventListener('keydown',function(e){if(e.key===
 </script>
 <div id="confirm-modal" class="modal-backdrop">
   <div class="modal-box">
-    <div class="modal-title">⚠️ 确认解散房间？</div>
+    <div class="modal-title">⚠ 确认解散房间？</div>
     <div class="modal-body">所有玩家数据（筹码、欠款）将被彺底清除，聊天记录同步清空。<br/>此操作<b>不可撤销</b>，请确认。</div>
     <div class="modal-btns">
       <button class="btn-save" onclick="confirmDiss()">确认解散</button>
@@ -719,7 +719,7 @@ export class PokerRoom {
                       || this.audience.find(x => x.id === body.playerId);
           if (!target) return this._adminJson({ error: '找不到该用户' }, 404);
           if (this.players.includes(target)) {
-            this._moveToAudience(body.playerId, `🔨 管理员将 ${target.name} 移至观众席`);
+            this._moveToAudience(body.playerId, `[管理员] 将 ${target.name} 移至观众席`);
           }
           return this._adminJson({ message: `已操作 ${target.name}` });
         }
@@ -734,7 +734,7 @@ export class PokerRoom {
           target.chips = Math.max(0, (target.chips || 0) + amt);
           this._savePlayerData();
           this._broadcastState();
-          return this._adminJson({ message: `${target.name} 🍓调整 ${amt > 0 ? '+' : ''}${amt}，当前：${target.chips}` });
+          return this._adminJson({ message: `${target.name} ◆调整 ${amt > 0 ? '+' : ''}${amt}，当前：${target.chips}` });
         }
 
         // 直接设置筹码为指定值
@@ -1031,7 +1031,7 @@ export class PokerRoom {
 
     const connectable = this.players.filter(p => p.connected && p.chips > 0);
     if (connectable.length < 2) {
-      this._broadcast({ type: 'error', message: '至少需要 2 名有🍓且在线的玩家' }); return;
+      this._broadcast({ type: 'error', message: '至少需要 2 名有◆且在线的玩家' }); return;
     }
     if (this.gameState.stage !== 'waiting') {
       this._broadcast({ type: 'error', message: '游戏已在进行中' }); return;
@@ -1058,7 +1058,7 @@ export class PokerRoom {
     gs.pot=sbAmt+bbAmt; gs.currentBet=bbAmt; gs.stage='preflop';
     gs.currentPlayerIndex=this._nextActionableIndex((gs.bigBlindIndex+1)%this.players.length);
     this._broadcastState();
-    this._broadcast({ type:'message', message:`🃏 新一局开始！庄家：${this.players[gs.dealerIndex].name}，小：${sbP.name}，大：${bbP.name}` });
+    this._broadcast({ type:'message', message:`[新局] 庄家：${this.players[gs.dealerIndex].name}，小：${sbP.name}，大：${bbP.name}` });
   }
 
   _handleAction(playerId, action, amount) {
@@ -1093,7 +1093,7 @@ export class PokerRoom {
         const minRaise=gs.currentBet*2;
         if(!amount||amount<minRaise){this._sendTo(playerId,{type:'error',message:`加注至少需要 ${minRaise}`});return;}
         const totalBet=Math.min(amount,player.chips+player.bet), addChips=totalBet-player.bet;
-        if(addChips>player.chips){this._sendTo(playerId,{type:'error',message:'🍓不足'});return;}
+        if(addChips>player.chips){this._sendTo(playerId,{type:'error',message:'◆不足'});return;}
         player.chips-=addChips; gs.pot+=addChips; player.bet=totalBet; gs.currentBet=totalBet;
         player.totalCommitted=(player.totalCommitted||0)+addChips;
         if(player.chips===0) player.allIn=true;
@@ -1118,7 +1118,7 @@ export class PokerRoom {
     if(active.length===1){
       // 其他人全部弃牌，剩余玩家赢得全部底池
       active[0].chips+=this.gameState.pot;
-      this._broadcast({type:'message',message:`🏆 ${active[0].name} 赢得 ${this.gameState.pot} 🍓（其他人全部弃牌）`});
+      this._broadcast({type:'message',message:`[\u80dc] ${active[0].name} 赢得 ${this.gameState.pot} ◆（其他人全部弃牌）`});
       this._endHand(); return;
     }
     if(this._isBettingRoundComplete()){ this._advanceStage(); return; }
@@ -1141,13 +1141,13 @@ export class PokerRoom {
     // 发公共牌
     if(gs.stage==='preflop'){
       gs.stage='flop'; gs.community.push(gs.deck.pop(),gs.deck.pop(),gs.deck.pop());
-      this._broadcast({type:'message',message:`🂠 翻牌：${gs.community.join(' ')}`});
+      this._broadcast({type:'message',message:`[翻牌] ${gs.community.join(' ')}`});
     } else if(gs.stage==='flop'){
       gs.stage='turn'; gs.community.push(gs.deck.pop());
-      this._broadcast({type:'message',message:`🂠 转牌：${gs.community[3]}`});
+      this._broadcast({type:'message',message:`[转牌] ${gs.community[3]}`});
     } else if(gs.stage==='turn'){
       gs.stage='river'; gs.community.push(gs.deck.pop());
-      this._broadcast({type:'message',message:`🂠 河牌：${gs.community[4]}`});
+      this._broadcast({type:'message',message:`[河牌] ${gs.community[4]}`});
     } else if(gs.stage==='river'){
       gs.stage='showdown'; this._showdown(); return;
     } else { return; }
@@ -1359,7 +1359,7 @@ export class PokerRoom {
           this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
           this._broadcastState();
           this._sendTo(playerId, { type: 'chat_history', messages: [...this.chatHistory] });
-          this._broadcast({ type:'message', message:`👀 ${name} 进入观众席（🍓 ${chips}${debt>0?' · 赊 '+debt:''}）` });
+          this._broadcast({ type:'message', message:`${name} 进入观众席（◆ ${chips}${debt>0?' · 赊 '+debt:''}）` });
         }
         break;
       }
@@ -1380,7 +1380,7 @@ export class PokerRoom {
         this.audience = this.audience.filter(p => p.id !== playerId);
         this.players.push(inAud);
         this._broadcastState();
-        this._broadcast({type:'message',message:`🪑 ${inAud.name} 上座加入游戏！`});
+        this._broadcast({type:'message',message:`${inAud.name} 上座加入游戏！`});
         break;
       }
 
@@ -1392,7 +1392,7 @@ export class PokerRoom {
         this.startVotes.delete(playerId);
         this.dissolveVotes.delete(playerId);
         this.kickVotes.delete(playerId);
-        this._moveToAudience(playerId, `🚶 ${pName} 主动让座`);
+        this._moveToAudience(playerId, `${pName} 主动让座`);
         break;
       }
 
@@ -1429,7 +1429,7 @@ export class PokerRoom {
         if (!person) return;
         person.chips += 1000; person.debt = (person.debt||0) + 1000;
         this._savePlayerData(); this._broadcastState();
-        this._broadcast({type:'message',message:`💳 ${person.name} 向银行借了 1000 🍓（累计赊 ${person.debt}）`});
+        this._broadcast({type:'message',message:`${person.name} 向银行借了1000 ◆（累计赊 ${person.debt}）`});
         break;
       }
 
@@ -1490,7 +1490,7 @@ export class PokerRoom {
           this._broadcast({type:'message',message:`${voter.name} 投票踢出 ${target.name}（${count}/${seatedConnected.length}，需要 ${needed}）`});
           if (needed > 0 && count >= needed) {
             this.kickVotes.delete(targetId);
-            this._moveToAudience(targetId, `🦶 ${target.name} 被投票移至观众席`);
+            this._moveToAudience(targetId, `${target.name} 被投票移至观众席`);
           }
         }
         break;

@@ -692,8 +692,11 @@
       z-index: 90; display: none;
       background: var(--panel); border: 1px solid var(--divider); border-right: none;
       border-radius: 6px 0 0 6px; color: var(--gold);
-      padding: 12px 8px; cursor: pointer; font-size: 1rem; line-height: 1;
-      transition: background .2s, color .2s; font-weight: 700;
+      padding: 14px 7px; cursor: pointer;
+      writing-mode: vertical-rl; text-orientation: mixed;
+      font-size: .78rem; font-weight: 600; letter-spacing: .18em;
+      min-height: 52px; line-height: 1;
+      transition: background .2s, color .2s;
     }
     body.in-room #chat-btn { display: flex; align-items: center; justify-content: center; }
     #chat-btn:hover { background: var(--hover); }
@@ -1189,10 +1192,10 @@
 </div><!-- #game-wrap -->
 
 <!-- ══ Chat ════════════════════════════════════ -->
-<button id="chat-btn" aria-label="聊天">&#x2039;</button>
+<button id="chat-btn" aria-label="聊天">聊天</button>
 <div id="chat-panel" aria-hidden="true">
   <div id="chat-header">
-    <span id="chat-title">&#x1F4AC; 聊天室</span>
+    <span id="chat-title"><i class="fa-solid fa-comments"></i> 聊天室</span>
     <button id="chat-close">&#x203A; 收起</button>
   </div>
   <div id="chat-messages"></div>
