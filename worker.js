@@ -238,6 +238,16 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
 .btn-danger{padding:8px 20px;border:none;border-radius:7px;background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.3);font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s}
 .btn-danger:hover{opacity:.8}
 
+/* ── Dissolve confirm modal ───────────────── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;align-items:center;justify-content:center;padding:16px;}
+.modal-backdrop.open{display:flex;}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:10px;color:#fca5a5;}
+.modal-body{font-size:.82rem;color:var(--muted);margin-bottom:22px;line-height:1.65;}
+.modal-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.modal-btns .btn-save{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);color:#fca5a5;}
+.modal-btns .btn-save:hover{background:rgba(239,68,68,.35);}
+
 /* ── Pwd row ─────────────────────────────────── */
 .pwd-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 @media(max-width:480px){.pwd-row{grid-template-columns:1fr}}
@@ -322,6 +332,7 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
           <div class="cfg-field"><label>最大座位数</label><input type="number" id="cms" min="2" max="20"/></div>
           <div class="cfg-field"><label>断线超时（分钟）</label><input type="number" id="cdt" min="1"/></div>
           <div class="cfg-field"><label>摊牌延迟（秒）</label><input type="number" id="csd" min="1"/></div>
+          <div class="cfg-field"><label>聊天记录上限（条）</label><input type="number" id="ccl" min="10" max="500" step="10" title="房间最多保留的聊天条数，超出后最早的一条自动删除"/></div>
         </div>
         <button class="btn-save" onclick="saveConfig()">保存配置</button>
       </div>
@@ -331,7 +342,7 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
     <div class="panel">
       <div class="panel-head"><span class="panel-title">房间操作</span></div>
       <div class="panel-body">
-        <button class="btn-danger" onclick="forceDiss()">强制解散房间（清除所有数据）</button>
+        <button class="btn-danger" onclick="forceDiss()"> 强制解散房间（清除所有数据）</button>
       </div>
     </div>
 
@@ -417,6 +428,7 @@ async function load(){
     document.getElementById('cms').value=d.config.maxSeats;
     document.getElementById('cdt').value=Math.round(d.config.disconnectTtl/60000);
     document.getElementById('csd').value=Math.round(d.config.showdownDelay/1000);
+    document.getElementById('ccl').value=d.config.chatHistoryLimit||50;
   }
   buildTable(d.players||[]);
 }
@@ -490,14 +502,18 @@ async function saveConfig(){
     initialChips:+document.getElementById('cic').value,
     maxSeats:+document.getElementById('cms').value,
     disconnectTtl:+document.getElementById('cdt').value*60000,
-    showdownDelay:+document.getElementById('csd').value*1000
+    showdownDelay:+document.getElementById('csd').value*1000,
+    chatHistoryLimit:+document.getElementById('ccl').value
   };
   var r=await api('/admin/config','POST',body);
   showMsg(r.data.message||r.data.error,r.ok);
 }
 
-async function forceDiss(){
-  if(!confirm('确认强制解散？所有筹码数据将被清除！'))return;
+function forceDiss(){
+  document.getElementById('confirm-modal').classList.add('open');
+}
+async function confirmDiss(){
+  document.getElementById('confirm-modal').classList.remove('open');
   var r=await api('/admin/dissolve','POST');
   showMsg(r.data.message||r.data.error,r.ok);load();
 }
@@ -515,6 +531,16 @@ async function changePwd(){
 if(TOKEN){api('/admin/state').then(function(r){if(r.ok)showMain();else{TOKEN='';localStorage.removeItem('at');}});}
 document.getElementById('pi').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 </script>
+<div id="confirm-modal" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-title">⚠️ 确认解散房间？</div>
+    <div class="modal-body">所有玩家数据（筹码、欠款）将被彺底清除，聊天记录同步清空。<br/>此操作<b>不可撤销</b>，请确认。</div>
+    <div class="modal-btns">
+      <button class="btn-save" onclick="confirmDiss()">确认解散</button>
+      <button class="btn-danger" onclick="document.getElementById('confirm-modal').classList.remove('open')"> 取消</button>
+    </div>
+  </div>
+</div>
 <div id="toast-box"></div>
 </body>
 </html>`;
