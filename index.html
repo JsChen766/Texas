@@ -657,6 +657,65 @@
     #btn-call    { background: #081e16; color: #58d8b0; border: 1px solid #143028; }
     #btn-raise   { background: #251a04; color: #e8b050; border: 1px solid #3a2808; }
     #btn-allin   { background: #1c0e34; color: #c890f8; border: 1px solid #2e1850; }
+
+    /* ── All-in Confirm Modal ──────────────────── */
+    #allin-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      z-index: 960;
+      align-items: center; justify-content: center;
+      padding: 20px; box-sizing: border-box;
+    }
+    #allin-backdrop.open { display: flex; }
+    #allin-modal {
+      background: var(--panel);
+      border: 1px solid var(--divider);
+      border-radius: 16px;
+      box-shadow: 0 12px 52px rgba(0,0,0,.8);
+      width: min(100%, 340px);
+      padding: 30px 24px 22px;
+      display: flex; flex-direction: column;
+      gap: 14px;
+      animation: bsm-in .2s cubic-bezier(.34,1.3,.64,1) both;
+    }
+    .allin-icon {
+      font-size: 2.4rem; text-align: center;
+      color: #c890f8; line-height: 1;
+    }
+    .allin-title {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--text); text-align: center;
+      letter-spacing: .04em;
+    }
+    .allin-desc {
+      font-size: .875rem; color: var(--text-muted);
+      text-align: center; line-height: 1.65;
+    }
+    .allin-chips-val {
+      font-size: 1.15rem; font-weight: 700;
+      color: #c890f8;
+    }
+    .allin-btns {
+      display: flex; gap: 10px; margin-top: 2px;
+    }
+    .allin-btns button {
+      flex: 1; padding: 12px 0;
+      border-radius: 10px; border: none;
+      font-size: .93rem; font-weight: 600;
+      cursor: pointer; transition: opacity .15s, background .15s;
+    }
+    .allin-btns button:active { opacity: .78; }
+    #btn-allin-cancel { background: var(--hover); color: var(--text); }
+    #btn-allin-confirm {
+      background: #3b1e5e; color: #c890f8;
+      border: 1px solid #5a2c90;
+    }
+    #btn-allin-confirm:hover { background: #4e2880; }
+    @media (max-width: 400px) {
+      #allin-modal { padding: 24px 16px 18px; }
+      .allin-btns button { padding: 10px 0; font-size: .87rem; }
+    }
     #btn-borrow  { background: #1e1604; color: #c8a040; border: 1px solid #3a2c08; }
     #btn-dissolve{ background: #1c1810; color: #908060; border: 1px solid #2e2818; }
     #btn-dissolve.voted { background: #2e1010; color: #d86060; border-color: #481818; }
@@ -698,7 +757,7 @@
       to   { opacity: .4; }
     }
     body.my-turn #game-area {
-      animation: action-glow 0.8s ease-in-out infinite alternate;
+      animation: action-glow 0.4s ease-in-out infinite alternate;
     }
     @keyframes action-glow {
       from { filter: brightness(0.84); }
@@ -951,6 +1010,11 @@
     body.light #btn-call     { background: #c8f0e4; color: #083028; border-color: #88d8c0; }
     body.light #btn-raise    { background: #f0e4c0; color: #482800; border-color: #d8c078; }
     body.light #btn-allin    { background: #e8d0f8; color: #300858; border-color: #c0a0e0; }
+    body.light #btn-allin-confirm { background: #e8d0f8; color: #300858; border-color: #c0a0e0; }
+    body.light #btn-allin-confirm:hover { background: #d8b8f0; }
+    body.light #btn-allin-cancel { background: #e8e4dc; color: #2a2010; }
+    body.light .allin-icon { color: #7020c0; }
+    body.light .allin-chips-val { color: #7020c0; }
     body.light #btn-borrow   { background: #f0e8c8; color: #4a3004; border-color: #c8a848; }
     body.light #btn-dissolve { background: #f0e8d0; color: #3a2a10; border-color: #d8c890; }
     body.light #btn-dissolve.voted { background: #f0d0d0; color: #5a1010; border-color: #d09090; }
@@ -1116,6 +1180,19 @@
     <div id="bsm-toast"></div>
   </div>
 </div>
+<!-- ══ All-in Confirm Modal ══════════════════ -->
+<div id="allin-backdrop">
+  <div id="allin-modal">
+    <div class="allin-icon"><i class="fa-solid fa-fire"></i></div>
+    <div class="allin-title">确认全押？</div>
+    <div class="allin-desc">此操作将押上你的<br><span class="allin-chips-val" id="allin-chips-display">全部</span>筹码，且无法撤回。</div>
+    <div class="allin-btns">
+      <button id="btn-allin-cancel">取消</button>
+      <button id="btn-allin-confirm"><i class="fa-solid fa-fire"></i>&nbsp;全押</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ Showdown Overlay ═══════════════════════════ -->
 <div id="showdown-overlay">
   <h2>🃏 摊牌结果</h2>
