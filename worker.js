@@ -172,6 +172,7 @@ body{
 .stat-box{
   background:var(--surface2);border:1px solid var(--border);
   border-radius:8px;padding:14px 16px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
 }
 .stat-box .val{font-size:1.8rem;font-weight:800;color:var(--blue);line-height:1}
 .stat-box .lbl{font-size:.7rem;color:var(--muted);margin-top:4px}
@@ -337,10 +338,10 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
             <label style="white-space:nowrap;font-weight:600">借米限制</label>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
               <input type="checkbox" id="cble" style="width:16px;height:16px;accent-color:#c8a840;cursor:pointer"/>
-              开启（超过下限不能借）
+              开启
             </label>
             <label style="display:flex;align-items:center;gap:6px">
-              笹码上限
+              借米条件--不超过
               <input type="number" id="cbl" min="0" step="50" style="width:90px" title="当玩家笹码超过此数时不准开启借米"/>
             </label>
           </div>
