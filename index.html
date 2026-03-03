@@ -806,6 +806,7 @@
       transition: background .2s, color .2s;
     }
     body.in-room #chat-btn { display: flex; align-items: center; justify-content: center; }
+    body.in-room:has(#chat-panel.open) #chat-btn { display: none; }
     #chat-btn:hover { background: var(--hover); }
     #chat-btn.has-new::after {
       content: ''; position: absolute; top: 7px; right: 9px;
@@ -1341,7 +1342,7 @@
 </div><!-- #game-wrap -->
 
 <!-- ══ Chat ════════════════════════════════════ -->
-<button id="chat-btn" aria-label="聊天">聊天</button>
+<button id="chat-btn" aria-label="对局助手">对局助手</button>
 <div id="chat-panel" aria-hidden="true">
   <div id="chat-header">
     <span id="chat-title"><i class="fa-solid fa-comments"></i> 聊天室</span>

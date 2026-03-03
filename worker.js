@@ -333,6 +333,17 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
           <div class="cfg-field"><label>断线超时（分钟）</label><input type="number" id="cdt" min="1"/></div>
           <div class="cfg-field"><label>摊牌延迟（秒）</label><input type="number" id="csd" min="1"/></div>
           <div class="cfg-field"><label>聊天记录上限（条）</label><input type="number" id="ccl" min="10" max="500" step="10" title="房间最多保留的聊天条数，超出后最早的一条自动删除"/></div>
+          <div class="cfg-field" style="grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 0;border-top:1px solid #334;margin-top:4px">
+            <label style="white-space:nowrap;font-weight:600">借米限制</label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="cble" style="width:16px;height:16px;accent-color:#c8a840;cursor:pointer"/>
+              开启（超过下限不能借）
+            </label>
+            <label style="display:flex;align-items:center;gap:6px">
+              笹码上限
+              <input type="number" id="cbl" min="0" step="50" style="width:90px" title="当玩家笹码超过此数时不准开启借米"/>
+            </label>
+          </div>
         </div>
         <button class="btn-save" onclick="saveConfig()">保存配置</button>
       </div>
@@ -429,6 +440,8 @@ async function load(){
     document.getElementById('cdt').value=Math.round(d.config.disconnectTtl/60000);
     document.getElementById('csd').value=Math.round(d.config.showdownDelay/1000);
     document.getElementById('ccl').value=d.config.chatHistoryLimit||50;
+    document.getElementById('cble').checked=d.config.borrowLimitEnabled!==false;
+    document.getElementById('cbl').value=d.config.borrowLimit??100;
   }
   buildTable(d.players||[]);
 }
@@ -503,7 +516,9 @@ async function saveConfig(){
     maxSeats:+document.getElementById('cms').value,
     disconnectTtl:+document.getElementById('cdt').value*60000,
     showdownDelay:+document.getElementById('csd').value*1000,
-    chatHistoryLimit:+document.getElementById('ccl').value
+    chatHistoryLimit:+document.getElementById('ccl').value,
+    borrowLimitEnabled:document.getElementById('cble').checked,
+    borrowLimit:+document.getElementById('cbl').value||100
   };
   var r=await api('/admin/config','POST',body);
   showMsg(r.data.message||r.data.error,r.ok);
@@ -583,7 +598,9 @@ export class PokerRoom {
       maxSeats:         10,
       disconnectTtl:    5 * 60 * 1000,
       showdownDelay:    2000,
-      chatHistoryLimit: 50,            // ← 聊天记录最多保留条数，可通过 /admin/config 修改
+      chatHistoryLimit: 50,
+      borrowLimitEnabled: true,        // ← 是否开启借米上限
+      borrowLimit: 100,                // ← 笹码超过该值不能借
     };
 
     // 管理员鉴权（token 仅内存保存，重启失效）
@@ -702,11 +719,14 @@ export class PokerRoom {
 
         // 更新配置
         if (p === '/admin/config') {
-          const allowed = ['smallBlind','bigBlind','initialChips','maxSeats','disconnectTtl','showdownDelay','chatHistoryLimit'];
+          const allowed = ['smallBlind','bigBlind','initialChips','maxSeats','disconnectTtl','showdownDelay','chatHistoryLimit','borrowLimit'];
           for (const k of allowed) {
-            if (body[k] !== undefined && Number.isFinite(+body[k]) && +body[k] > 0) {
+            if (body[k] !== undefined && Number.isFinite(+body[k]) && +body[k] >= 0) {
               this.config[k] = +body[k];
             }
+          }
+          if (typeof body.borrowLimitEnabled === 'boolean') {
+            this.config.borrowLimitEnabled = body.borrowLimitEnabled;
           }
           await this.state.storage.put('config', this.config);
           this._broadcastState();
@@ -1427,6 +1447,10 @@ export class PokerRoom {
         }
         const person = this.players.find(p=>p.id===playerId)||this.audience.find(p=>p.id===playerId);
         if (!person) return;
+        // 借米限制检查
+        if (this.config.borrowLimitEnabled !== false && person.chips > (this.config.borrowLimit ?? 100)) {
+          this._sendTo(playerId,{type:'error',message:'你还有很多米，不准借'}); return;
+        }
         person.chips += 1000; person.debt = (person.debt||0) + 1000;
         this._savePlayerData(); this._broadcastState();
         this._broadcast({type:'message',message:`${person.name} 向银行借了1000 ◆（累计赊 ${person.debt}）`});
