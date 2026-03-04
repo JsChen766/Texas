@@ -442,7 +442,7 @@ async function load(){
     document.getElementById('csd').value=Math.round(d.config.showdownDelay/1000);
     document.getElementById('ccl').value=d.config.chatHistoryLimit||50;
     document.getElementById('cble').checked=d.config.borrowLimitEnabled!==false;
-    document.getElementById('cbl').value=d.config.borrowLimit??100;
+    document.getElementById('cbl').value=d.config.borrowLimit??500;
   }
   buildTable(d.players||[]);
 }
@@ -519,7 +519,7 @@ async function saveConfig(){
     showdownDelay:+document.getElementById('csd').value*1000,
     chatHistoryLimit:+document.getElementById('ccl').value,
     borrowLimitEnabled:document.getElementById('cble').checked,
-    borrowLimit:+document.getElementById('cbl').value||100
+    borrowLimit:+document.getElementById('cbl').value||500
   };
   var r=await api('/admin/config','POST',body);
   showMsg(r.data.message||r.data.error,r.ok);
@@ -601,7 +601,7 @@ export class PokerRoom {
       showdownDelay:    2000,
       chatHistoryLimit: 50,
       borrowLimitEnabled: true,        // ← 是否开启借米上限
-      borrowLimit: 100,                // ← 笹码超过该值不能借
+      borrowLimit: 500,                // ← 筹码超过该值不能借
     };
 
     // 管理员鉴权（token 仅内存保存，重启失效）
@@ -1021,6 +1021,10 @@ export class PokerRoom {
           startVotes:    startCount,    startTotal:    seatedConnected.length,
           kickStatus,
           maxSeats: this.config.maxSeats,
+          config: {
+            borrowLimitEnabled: this.config.borrowLimitEnabled,
+            borrowLimit:        this.config.borrowLimit,
+          },
         }));
       } catch(_) {}
     }
