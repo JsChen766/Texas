@@ -339,11 +339,11 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
             <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem">
                 <input type="radio" name="cbm" id="cbm-bank" value="bank" style="accent-color:#c8a840;cursor:pointer;width:15px;height:15px"/>
-                🏦 银行借（低于上限每次+1000）
+                银行借（低于上限每次+1000）
               </label>
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem">
                 <input type="radio" name="cbm" id="cbm-peer" value="peer" style="accent-color:#c8a840;cursor:pointer;width:15px;height:15px"/>
-                🤝 找人借（玩家间转账，需双方确认）
+                找人借（玩家间转账，需双方确认）
               </label>
             </div>
           </div>
@@ -615,6 +615,7 @@ export class PokerRoom {
     this.kickVotes        = new Map(); // targetId → Set<voterId>
     this.chatHistory      = [];        // 聊天记录（内存，重启清零）
     this.pendingBorrowRequests = new Map(); // requestId → { fromId, toId, amount, timer }
+    this.lastShowdown = null;          // 缓存最近一次摩牌结果，供重连用户补发
 
     // 可动态修改的配置
     this.config = {
@@ -1208,7 +1209,7 @@ export class PokerRoom {
     } else { return; }
     // 检查是否还有玩家可以行动，如果全部全押则继续推进到摇牌
     const next=this._nextActionableIndex((gs.dealerIndex+1)%this.players.length);
-    if(next===-1){ this._advanceStage(); return; }  // 递归推进直到摇牌
+    if(next===-1){ this._broadcastState(); this._advanceStage(); return; }  // 全压快进：先广播已发公共牌状态
     gs.currentPlayerIndex=next; this._broadcastState();
   }
 
@@ -1272,14 +1273,16 @@ export class PokerRoom {
       const p = this.players.find(p => p.id === id);
       return { id, name: p.name, amount, handName: handNames[id] || '' };
     });
-    this._broadcast({
+    const showdownMsg = {
       type: 'showdown',
       results: notFolded.map(p => ({ id: p.id, name: p.name, hand: p.hand, handName: handNames[p.id] || '' })),
       winners: allWinners,
       pots: potResults,
       community: this.gameState.community,
       pot: this.gameState.pot,
-    });
+    };
+    this.lastShowdown = showdownMsg;  // 缓存以供重连用户补发
+    this._broadcast(showdownMsg);
     this._broadcastState();
     setTimeout(() => this._endHand(), this.config.showdownDelay);
   }
@@ -1308,6 +1311,7 @@ export class PokerRoom {
     const gs=this.gameState;
     gs.stage='waiting'; gs.community=[]; gs.pot=0;
     gs.currentBet=0; gs.actedSet=new Set(); gs.lastRaiserIndex=-1;
+    this.lastShowdown = null;  // 对局结束，清除摩牌缓存
     for(const p of this.players){p.folded=false;p.allIn=false;p.bet=0;p.hand=[];}
     this._savePlayerData();
     this._broadcastState();
@@ -1389,6 +1393,9 @@ export class PokerRoom {
           }
           this._broadcastState();
           this._sendTo(playerId, { type: 'chat_history', messages: [...this.chatHistory] });
+          if (this.lastShowdown && this.gameState.stage === 'showdown') {
+            this._sendTo(playerId, this.lastShowdown);
+          }
           this._broadcast({ type:'message', message:`${inPlayers.name} 重新连线（玩家）` });
         } else if (inAudience) {
           inAudience.connected = true; inAudience.lastSeen = Date.now();
@@ -1401,6 +1408,9 @@ export class PokerRoom {
           }
           this._broadcastState();
           this._sendTo(playerId, { type: 'chat_history', messages: [...this.chatHistory] });
+          if (this.lastShowdown && this.gameState.stage === 'showdown') {
+            this._sendTo(playerId, this.lastShowdown);
+          }
           this._broadcast({ type:'message', message:`${inAudience.name} 重新连线（观众）` });
         } else {
           const name = (msg.name||'').trim()||`游客${this.audience.length+1}`;
@@ -1414,6 +1424,9 @@ export class PokerRoom {
           this.audience.push({id:playerId,name,chips,debt,hand:[],folded:false,allIn:false,bet:0,connected:true,lastSeen:Date.now()});
           this._broadcastState();
           this._sendTo(playerId, { type: 'chat_history', messages: [...this.chatHistory] });
+          if (this.lastShowdown && this.gameState.stage === 'showdown') {
+            this._sendTo(playerId, this.lastShowdown);
+          }
           this._broadcast({ type:'message', message:`${name} 进入观众席（◆ ${chips}${debt>0?' · 赊 '+debt:''}）` });
         }
         break;

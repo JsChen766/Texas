@@ -601,6 +601,35 @@
       border-color: #86efac;
       box-shadow: 0 4px 18px rgba(0,0,0,.18);
     }
+    #borrow-toast {
+      position: fixed;
+      bottom: 128px;
+      left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: #1e1604;
+      color: #f0c040;
+      border: 1px solid #8a6c18;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: .88rem;
+      font-weight: 700;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 999;
+      transition: opacity .25s, transform .25s;
+      white-space: nowrap;
+      box-shadow: 0 4px 18px rgba(0,0,0,.5);
+    }
+    #borrow-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    body.light #borrow-toast {
+      background: #fffbeb;
+      color: #78440a;
+      border-color: #d4a017;
+      box-shadow: 0 4px 18px rgba(0,0,0,.15);
+    }
     #start-toast {
       position: fixed;
       bottom: 72px;
@@ -1301,7 +1330,7 @@
 <!-- ══ Peer Borrow Modal (initiator) ═══════ -->
 <div id="borrow-peer-backdrop">
   <div id="borrow-peer-modal">
-    <div class="allin-icon">🏦</div>
+    <div class="allin-icon"><i class="fa-solid fa-building-columns"></i></div>
     <div class="allin-title">银行没米了</div>
     <div class="borrow-peer-sub">找人借</div>
     <div class="borrow-peer-form">
@@ -1324,7 +1353,7 @@
 <!-- ══ Peer Borrow Confirm Modal (target) ═══ -->
 <div id="borrow-confirm-backdrop">
   <div id="borrow-confirm-modal">
-    <div class="allin-icon">🤝</div>
+    <div class="allin-icon"><i class="fa-solid fa-handshake"></i></div>
     <div class="allin-title">借米请求</div>
     <div class="allin-desc">
       <span id="borrow-confirm-from" style="color:var(--text);font-weight:600">？</span> 想向你借<br>
@@ -1418,6 +1447,7 @@
     </div>
     <div id="lucky-toast"><svg t="1772381427717" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1772" width="16" height="16" style="vertical-align:-2px;margin-right:4px"><path d="M512.776 587.284s-7.744 193.284-68 304" fill="#00DA38" p-id="1773"></path><path d="M792.776 159.284s112 46.856 112 112c0 65.14-118.22 195.428-392 192 0 0-31.344-91.256 0-212 32.692-125.928 97.632-199.864 160-208 50.08-6.532 66.688 32.392 120 116z" fill="#0CE000" p-id="1774"></path><path d="M511.536 459.276c-5.508-18.824-26.26-102.06 1.24-207.992 32.692-125.928 97.632-199.864 160-208 50.08-6.532 66.688 32.392 120 116l0.04 0.016-281.28 299.976z" fill="#44EA00" p-id="1775"></path><path d="M791.396 720.032s-46.98 111.948-112.124 111.876c-65.14-0.068-195.3-118.428-191.576-392.204 0 0 91.288-31.248 212 0.228 125.892 32.824 199.76 97.844 207.828 160.224 6.476 50.084-32.464 66.652-116.128 119.876z" fill="#0CE000" p-id="1776"></path><path d="M491.704 438.468c18.832-5.488 102.088-26.152 207.992 1.464 125.892 32.824 199.76 97.844 207.828 160.224 6.476 50.084-32.464 66.652-116.128 119.876l-0.016 0.036-299.676-281.6z" fill="#44EA00" p-id="1777"></path><path d="M230.648 718.044s-111.9-47.1-111.76-112.24c0.14-65.144 118.644-195.176 392.416-191.156 0 0 31.148 91.32-0.46 212-32.96 125.856-98.056 199.652-160.444 207.656-50.092 6.424-66.62-32.536-119.752-116.26z" fill="#0CE000" p-id="1778"></path><path d="M230.612 718.028l281.924-299.372c5.464 18.84 26.04 102.116-1.692 207.992-32.96 125.856-98.056 199.652-160.444 207.656-50.092 6.424-66.62-32.536-119.752-116.26l-0.036-0.016z" fill="#44EA00" p-id="1779"></path><path d="M233.24 157.3S280.46 45.452 345.6 45.664c65.14 0.208 195.048 118.852 190.732 392.616 0 0-91.352 31.052-212-0.684-125.82-33.096-199.548-98.272-207.48-160.672-6.372-50.096 32.604-66.58 116.388-119.624z" fill="#0CE000" p-id="1780"></path><path d="M532.324 439.508c-18.844 5.448-102.144 25.932-207.992-1.912-125.82-33.096-199.548-98.272-207.48-160.672-6.372-50.096 32.604-66.58 116.388-119.624l0.016-0.036 299.068 282.244z" fill="#44EA00" p-id="1781"></path><path d="M640.944 315.064l-83.996 118.844 80.044 121.54-118.844-83.992-121.536 80.044 83.992-118.844-80.044-121.54 118.844 83.992 121.54-80.044z" fill="#92FA14" p-id="1782"></path></svg> 转运成功！</div>
     <div id="start-toast"></div>
+    <div id="borrow-toast"><i class="fa-solid fa-coins" style="margin-right:5px"></i>借米成功！</div>
 
 
     <!-- 行动按钮 -->
