@@ -334,7 +334,20 @@ td{padding:10px 12px;vertical-align:middle;font-size:.85rem}
           <div class="cfg-field"><label>断线超时（分钟）</label><input type="number" id="cdt" min="1"/></div>
           <div class="cfg-field"><label>摊牌延迟（秒）</label><input type="number" id="csd" min="1"/></div>
           <div class="cfg-field"><label>聊天记录上限（条）</label><input type="number" id="ccl" min="10" max="500" step="10" title="房间最多保留的聊天条数，超出后最早的一条自动删除"/></div>
-          <div class="cfg-field" style="grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 0;border-top:1px solid #334;margin-top:4px">
+          <div class="cfg-field" style="grid-column:1/-1;display:flex;align-items:flex-start;flex-direction:column;gap:8px;padding:8px 0;border-top:1px solid #2a2e38;margin-top:4px">
+            <label style="white-space:nowrap;font-weight:700;font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">借米模式</label>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem">
+                <input type="radio" name="cbm" id="cbm-bank" value="bank" style="accent-color:#c8a840;cursor:pointer;width:15px;height:15px"/>
+                🏦 银行借（低于上限每次+1000）
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem">
+                <input type="radio" name="cbm" id="cbm-peer" value="peer" style="accent-color:#c8a840;cursor:pointer;width:15px;height:15px"/>
+                🤝 找人借（玩家间转账，需双方确认）
+              </label>
+            </div>
+          </div>
+          <div class="cfg-field" id="borrow-limit-row" style="grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 0;border-top:1px solid #2a2e38">
             <label style="white-space:nowrap;font-weight:600">借米限制</label>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
               <input type="checkbox" id="cble" style="width:16px;height:16px;accent-color:#c8a840;cursor:pointer"/>
@@ -443,6 +456,10 @@ async function load(){
     document.getElementById('ccl').value=d.config.chatHistoryLimit||50;
     document.getElementById('cble').checked=d.config.borrowLimitEnabled!==false;
     document.getElementById('cbl').value=d.config.borrowLimit??500;
+    var _bm=d.config.borrowMode||'bank';
+    var _bmEl=document.getElementById('cbm-'+_bm);
+    if(_bmEl)_bmEl.checked=true;
+    document.getElementById('borrow-limit-row').style.display=_bm==='bank'?'flex':'none';
   }
   buildTable(d.players||[]);
 }
@@ -519,7 +536,8 @@ async function saveConfig(){
     showdownDelay:+document.getElementById('csd').value*1000,
     chatHistoryLimit:+document.getElementById('ccl').value,
     borrowLimitEnabled:document.getElementById('cble').checked,
-    borrowLimit:+document.getElementById('cbl').value||500
+    borrowLimit:+document.getElementById('cbl').value||500,
+    borrowMode:document.querySelector('input[name="cbm"]:checked')?.value||'bank'
   };
   var r=await api('/admin/config','POST',body);
   showMsg(r.data.message||r.data.error,r.ok);
@@ -546,6 +564,12 @@ async function changePwd(){
 // 自动登录 & 回车支持
 if(TOKEN){api('/admin/state').then(function(r){if(r.ok)showMain();else{TOKEN='';localStorage.removeItem('at');}});}
 document.getElementById('pi').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+// 借米模式切换 → 实时显隐银行借米限制行
+document.querySelectorAll('input[name="cbm"]').forEach(function(r){
+  r.addEventListener('change',function(){
+    document.getElementById('borrow-limit-row').style.display=this.value==='bank'?'flex':'none';
+  });
+});
 </script>
 <div id="confirm-modal" class="modal-backdrop">
   <div class="modal-box">
@@ -590,6 +614,7 @@ export class PokerRoom {
     this.startVotes       = new Set();
     this.kickVotes        = new Map(); // targetId → Set<voterId>
     this.chatHistory      = [];        // 聊天记录（内存，重启清零）
+    this.pendingBorrowRequests = new Map(); // requestId → { fromId, toId, amount, timer }
 
     // 可动态修改的配置
     this.config = {
@@ -602,6 +627,7 @@ export class PokerRoom {
       chatHistoryLimit: 50,
       borrowLimitEnabled: true,        // ← 是否开启借米上限
       borrowLimit: 500,                // ← 筹码超过该值不能借
+      borrowMode: 'bank',             // ← 借米模式: 'bank'银行借 | 'peer'找人借
     };
 
     // 管理员鉴权（token 仅内存保存，重启失效）
@@ -728,6 +754,9 @@ export class PokerRoom {
           }
           if (typeof body.borrowLimitEnabled === 'boolean') {
             this.config.borrowLimitEnabled = body.borrowLimitEnabled;
+          }
+          if (body.borrowMode === 'bank' || body.borrowMode === 'peer') {
+            this.config.borrowMode = body.borrowMode;
           }
           await this.state.storage.put('config', this.config);
           this._broadcastState();
@@ -1024,6 +1053,7 @@ export class PokerRoom {
           config: {
             borrowLimitEnabled: this.config.borrowLimitEnabled,
             borrowLimit:        this.config.borrowLimit,
+            borrowMode:         this.config.borrowMode || 'bank',
           },
         }));
       } catch(_) {}
@@ -1445,20 +1475,86 @@ export class PokerRoom {
 
       case 'action': this._handleAction(playerId,msg.action,msg.amount); break;
 
-      // ── 借🍓
+      // ── 借🍓（銀行模式）
       case 'borrow': {
         if (this.gameState.stage !== 'waiting') {
           this._sendTo(playerId,{type:'error',message:'只能在等待阶段借🍓'}); return;
         }
+        if (this.config.borrowMode === 'peer') {
+          this._sendTo(playerId,{type:'error',message:'当前为「找人借」模式，请选择玩家'}); return;
+        }
         const person = this.players.find(p=>p.id===playerId)||this.audience.find(p=>p.id===playerId);
         if (!person) return;
         // 借米限制检查
-        if (this.config.borrowLimitEnabled !== false && person.chips > (this.config.borrowLimit ?? 100)) {
+        if (this.config.borrowLimitEnabled !== false && person.chips > (this.config.borrowLimit ?? 500)) {
           this._sendTo(playerId,{type:'error',message:'你还有很多米，不准借'}); return;
         }
         person.chips += 1000; person.debt = (person.debt||0) + 1000;
         this._savePlayerData(); this._broadcastState();
         this._broadcast({type:'message',message:`${person.name} 向银行借了1000 ◆（累计赊 ${person.debt}）`});
+        break;
+      }
+
+      // ── 借🍓（找人借模式）
+      case 'borrow_peer': {
+        if (this.gameState.stage !== 'waiting') {
+          this._sendTo(playerId,{type:'error',message:'只能在等待阶段借米'}); return;
+        }
+        const amount = Math.round(+msg.amount||0);
+        if (amount <= 0) {
+          this._sendTo(playerId,{type:'error',message:'借米金额必须大于0'}); return;
+        }
+        const allPeople = [...this.players,...this.audience];
+        const fromP = allPeople.find(p=>p.id===playerId);
+        const toP   = allPeople.find(p=>p.id===msg.targetId);
+        if (!fromP) return;
+        if (!toP || toP.id === playerId) {
+          this._sendTo(playerId,{type:'error',message:'无效的借米对象'}); return;
+        }
+        if (!toP.connected) {
+          this._sendTo(playerId,{type:'error',message:'对方当前不在线'}); return;
+        }
+        if (toP.chips < amount) {
+          this._sendTo(playerId,{type:'error',message:`${toP.name} 米不够（当前 ${toP.chips}）`}); return;
+        }
+        const requestId = crypto.randomUUID();
+        const timer = setTimeout(() => {
+          if (this.pendingBorrowRequests.has(requestId)) {
+            this.pendingBorrowRequests.delete(requestId);
+            this._sendTo(playerId,{type:'borrow_peer_result',success:false,message:'借米请求超时30秒未回应'});
+          }
+        }, 30000);
+        this.pendingBorrowRequests.set(requestId,{fromId:playerId,toId:toP.id,amount,timer});
+        this._sendTo(toP.id,{type:'borrow_peer_request',requestId,fromId:playerId,fromName:fromP.name,amount});
+        this._sendTo(playerId,{type:'borrow_peer_result',success:null,message:`已向 ${toP.name} 发送请求，等待确认…`});
+        break;
+      }
+
+      // ── 借🍓回应（被借方）
+      case 'borrow_peer_respond': {
+        const req = this.pendingBorrowRequests.get(msg.requestId);
+        if (!req) { this._sendTo(playerId,{type:'error',message:'请求已过期或不存在'}); return; }
+        if (req.toId !== playerId) return;
+        clearTimeout(req.timer);
+        this.pendingBorrowRequests.delete(msg.requestId);
+        const allPeople2 = [...this.players,...this.audience];
+        const fromP2 = allPeople2.find(p=>p.id===req.fromId);
+        const toP2   = allPeople2.find(p=>p.id===req.toId);
+        if (!msg.accept) {
+          this._sendTo(req.fromId,{type:'borrow_peer_result',success:false,message:`${toP2?.name||'对方'} 拒绝了借米请求`});
+          return;
+        }
+        if (!fromP2||!toP2) return;
+        if (toP2.chips < req.amount) {
+          this._sendTo(req.fromId,{type:'borrow_peer_result',success:false,message:`${toP2.name} 米不够，转账失败`});
+          this._sendTo(playerId,{type:'error',message:'你的米不足，转账失败'});
+          return;
+        }
+        toP2.chips   -= req.amount;
+        fromP2.chips += req.amount;
+        this._savePlayerData(); this._broadcastState();
+        this._broadcast({type:'message',message:`${toP2.name} 借给 ${fromP2.name} ${req.amount} ◆`});
+        this._sendTo(req.fromId,{type:'borrow_peer_result',success:true,message:`${toP2.name} 同意了！+${req.amount} ◆`});
         break;
       }
 

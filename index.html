@@ -745,6 +745,66 @@
       #allin-modal { padding: 24px 16px 18px; }
       .allin-btns button { padding: 10px 0; font-size: .87rem; }
     }
+
+    /* ── Peer Borrow Modals ─────────────────── */
+    #borrow-peer-backdrop, #borrow-confirm-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65);
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      z-index: 962;
+      align-items: center; justify-content: center;
+      padding: 20px; box-sizing: border-box;
+    }
+    #borrow-peer-backdrop.open, #borrow-confirm-backdrop.open { display: flex; }
+    #borrow-peer-modal, #borrow-confirm-modal {
+      background: var(--panel);
+      border: 1px solid var(--divider);
+      border-radius: 16px;
+      box-shadow: 0 12px 52px rgba(0,0,0,.8);
+      width: min(100%, 340px);
+      padding: 30px 24px 22px;
+      display: flex; flex-direction: column;
+      gap: 14px;
+      animation: bsm-in .2s cubic-bezier(.34,1.3,.64,1) both;
+    }
+    .borrow-peer-sub {
+      font-size: .82rem; color: var(--text-muted);
+      text-align: center; letter-spacing: .05em;
+      border-bottom: 1px solid var(--divider);
+      padding-bottom: 10px;
+    }
+    .borrow-peer-form { display: flex; flex-direction: column; gap: 12px; }
+    .borrow-peer-group { display: flex; flex-direction: column; gap: 5px; }
+    .borrow-peer-label {
+      font-size: .75rem; color: var(--text-muted);
+      font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    }
+    #borrow-peer-select, #borrow-peer-amount {
+      width: 100%; padding: 9px 12px;
+      background: rgba(0,0,0,.35); border: 1px solid var(--divider);
+      border-radius: 8px; color: var(--text); font-size: .9rem;
+      outline: none; box-sizing: border-box;
+      transition: border-color .18s;
+    }
+    #borrow-peer-select { cursor: pointer; }
+    #borrow-peer-select:focus, #borrow-peer-amount:focus { border-color: #c8a840; }
+    #btn-borrow-peer-cancel, #btn-borrow-confirm-reject {
+      background: var(--hover); color: var(--text);
+    }
+    #btn-borrow-peer-confirm {
+      background: #1a2e0c; color: #90d050;
+      border: 1px solid #3a5018;
+    }
+    #btn-borrow-peer-confirm:hover { background: #263e12; }
+    #btn-borrow-confirm-accept {
+      background: #0c2e14; color: #60d870;
+      border: 1px solid #1e5030;
+    }
+    #btn-borrow-confirm-accept:hover { background: #14401c; }
+    @media (max-width: 400px) {
+      #borrow-peer-modal, #borrow-confirm-modal { padding: 24px 16px 18px; }
+    }
+
     #btn-borrow  { background: #1e1604; color: #c8a040; border: 1px solid #3a2c08; }
     #btn-dissolve{ background: #1c1810; color: #908060; border: 1px solid #2e2818; }
     #btn-dissolve.voted { background: #2e1010; color: #d86060; border-color: #481818; }
@@ -1064,6 +1124,15 @@
     body.light #btn-allin-cancel { background: #e8e4dc; color: #2a2010; }
     body.light .allin-icon { color: #7020c0; }
     body.light .allin-chips-val { color: #7020c0; }
+    body.light #borrow-peer-select,
+    body.light #borrow-peer-amount { background: #f4f0e4; border-color: #c8a848; color: #2a1800; }
+    body.light #btn-borrow-peer-confirm { background: #d0eca0; color: #1a3808; border-color: #8abe48; }
+    body.light #btn-borrow-peer-confirm:hover { background: #bce088; }
+    body.light #btn-borrow-confirm-accept { background: #a8e8b8; color: #083018; border-color: #68c888; }
+    body.light #btn-borrow-confirm-accept:hover { background: #90dca4; }
+    body.light #btn-borrow-peer-cancel,
+    body.light #btn-borrow-confirm-reject { background: #e8e4dc; color: #2a2010; }
+    body.light .borrow-peer-sub { color: #605040; border-color: #d0c0a0; }
     body.light #btn-borrow   { background: #f0e8c8; color: #4a3004; border-color: #c8a848; }
     body.light #btn-dissolve { background: #f0e8d0; color: #3a2a10; border-color: #d8c890; }
     body.light #btn-dissolve.voted { background: #f0d0d0; color: #5a1010; border-color: #d09090; }
@@ -1229,6 +1298,45 @@
     <div id="bsm-toast"></div>
   </div>
 </div>
+<!-- ══ Peer Borrow Modal (initiator) ═══════ -->
+<div id="borrow-peer-backdrop">
+  <div id="borrow-peer-modal">
+    <div class="allin-icon">🏦</div>
+    <div class="allin-title">银行没米了</div>
+    <div class="borrow-peer-sub">找人借</div>
+    <div class="borrow-peer-form">
+      <div class="borrow-peer-group">
+        <label class="borrow-peer-label">选择玩家</label>
+        <select id="borrow-peer-select"></select>
+      </div>
+      <div class="borrow-peer-group">
+        <label class="borrow-peer-label">借米金额</label>
+        <input id="borrow-peer-amount" type="number" min="1" step="100" placeholder="输入金额…" />
+      </div>
+    </div>
+    <div class="allin-btns">
+      <button id="btn-borrow-peer-cancel">取消</button>
+      <button id="btn-borrow-peer-confirm"><i class="fa-solid fa-paper-plane"></i>&nbsp;发送请求</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Peer Borrow Confirm Modal (target) ═══ -->
+<div id="borrow-confirm-backdrop">
+  <div id="borrow-confirm-modal">
+    <div class="allin-icon">🤝</div>
+    <div class="allin-title">借米请求</div>
+    <div class="allin-desc">
+      <span id="borrow-confirm-from" style="color:var(--text);font-weight:600">？</span> 想向你借<br>
+      <span class="allin-chips-val" id="borrow-confirm-amount">？</span> ◆
+    </div>
+    <div class="allin-btns">
+      <button id="btn-borrow-confirm-reject">拒绝</button>
+      <button id="btn-borrow-confirm-accept"><i class="fa-solid fa-check"></i>&nbsp;借给他</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ All-in Confirm Modal ══════════════════ -->
 <div id="allin-backdrop">
   <div id="allin-modal">
@@ -1323,7 +1431,7 @@
         </div>
         <!-- 第二行：借🍓 | 弃牌 | 过牌 | 跟注 -->
         <div class="action-row">
-          <button id="btn-borrow" class="action-btn"><i class="fa-solid fa-coins"></i>借1000</button>
+          <button id="btn-borrow" class="action-btn"><i class="fa-solid fa-coins"></i> 借米</button>
           <button id="btn-fold"   class="action-btn" disabled><i class="fa-solid fa-xmark"></i> 弃牌</button>
           <button id="btn-check"  class="action-btn" disabled><i class="fa-solid fa-minus"></i> 过牌</button>
           <button id="btn-call"   class="action-btn" disabled><i class="fa-solid fa-equals"></i> 跟注</button>
